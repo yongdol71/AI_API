@@ -578,8 +578,8 @@ public:
                         }}
                     });
                 }
-                // 문서 파일 처리 (PDF 등)
-                else if (IsDocumentFile(filepath))
+                // PDF 문서 파일 처리
+                else if (IsPdfFile(filepath))
                 {
                     contentArray.push_back({
                         {"type", "document"},
@@ -588,6 +588,25 @@ public:
                             {"media_type", mimeType},
                             {"data", base64Data}
                         }}
+                    });
+                }
+                // 텍스트 파일 처리 (JSON, TXT, XML 등)
+                else if (IsTextFile(filepath))
+                {
+                    // 텍스트 파일 내용을 문자열로 변환
+                    std::string textContent(fileData.begin(), fileData.end());
+
+                    // 파일명 추출
+                    std::string filename = filepath;
+                    size_t lastSlash = filename.find_last_of("\\/");
+                    if (lastSlash != std::string::npos)
+                        filename = filename.substr(lastSlash + 1);
+
+                    // 텍스트 블록으로 추가
+                    std::string textBlock = std::string("File: ") + filename + "\n\n" + textContent;
+                    contentArray.push_back({
+                        {"type", "text"},
+                        {"text", CreateJSONString(textBlock.c_str())}
                     });
                 }
                 else

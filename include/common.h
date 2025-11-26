@@ -132,11 +132,23 @@ inline bool IsImageFile(const char* filepath)
     return mime.find("image/") == 0;
 }
 
-inline bool IsDocumentFile(const char* filepath)
+inline bool IsPdfFile(const char* filepath)
 {
     std::string mime = GetMimeType(filepath);
-    return mime == "application/pdf" ||
-           mime.find("text/") == 0 ||
+    return mime == "application/pdf";
+}
+
+inline bool IsTextFile(const char* filepath)
+{
+    std::string mime = GetMimeType(filepath);
+    return mime.find("text/") == 0 ||
            mime == "application/json" ||
-           mime == "application/xml";
+           mime == "application/xml" ||
+           mime == "text/csv";
+}
+
+inline bool IsDocumentFile(const char* filepath)
+{
+    // Claude API는 document 타입으로 PDF만 지원
+    return IsPdfFile(filepath);
 }
