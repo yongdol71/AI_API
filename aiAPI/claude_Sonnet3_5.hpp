@@ -530,7 +530,7 @@ public:
             {
                 contentArray.push_back({
                     {"type", "text"},
-                    {"text", CreateJSONString(prompt)}
+                    {"text", prompt}  // nlohmann/json이 UTF-8과 JSON 이스케이프를 자동 처리
                 });
             }
 
@@ -642,7 +642,7 @@ public:
                     std::string textBlock = std::string("File: ") + filename + "\n\n" + textContent;
                     contentArray.push_back({
                         {"type", "text"},
-                        {"text", CreateJSONString(textBlock.c_str())}
+                        {"text", textBlock}  // nlohmann/json이 UTF-8과 JSON 이스케이프를 자동 처리
                     });
                 }
                 else
