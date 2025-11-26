@@ -593,8 +593,40 @@ public:
                 // 텍스트 파일 처리 (JSON, TXT, XML 등)
                 else if (IsTextFile(filepath))
                 {
-                    // 텍스트 파일 내용을 문자열로 변환
-                    std::string textContent(fileData.begin(), fileData.end());
+                    std::string textContent;
+
+                    // UTF-8 BOM 확인 (EF BB BF)
+                    bool hasUtf8Bom = (fileData.size() >= 3 &&
+                                      fileData[0] == 0xEF &&
+                                      fileData[1] == 0xBB &&
+                                      fileData[2] == 0xBF);
+
+                    if (hasUtf8Bom)
+                    {
+                        // UTF-8 BOM이 있으면 BOM을 제거하고 UTF-8 그대로 사용
+                        textContent = std::string(fileData.begin() + 3, fileData.end());
+                    }
+                    else
+                    {
+                        // BOM이 없으면 ANSI(CP949)로 간주하고 UTF-8로 변환
+                        // ANSI -> Wide char
+                        std::string ansiText(fileData.begin(), fileData.end());
+                        int wideLen = MultiByteToWideChar(CP_ACP, 0, ansiText.c_str(), -1, nullptr, 0);
+                        if (wideLen > 0)
+                        {
+                            std::vector<wchar_t> wideBuffer(wideLen);
+                            MultiByteToWideChar(CP_ACP, 0, ansiText.c_str(), -1, wideBuffer.data(), wideLen);
+
+                            // Wide char -> UTF-8
+                            int utf8Len = WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), -1, nullptr, 0, nullptr, nullptr);
+                            if (utf8Len > 0)
+                            {
+                                std::vector<char> utf8Buffer(utf8Len);
+                                WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), -1, utf8Buffer.data(), utf8Len, nullptr, nullptr);
+                                textContent = std::string(utf8Buffer.data());
+                            }
+                        }
+                    }
 
                     // 파일명 추출
                     std::string filename = filepath;
