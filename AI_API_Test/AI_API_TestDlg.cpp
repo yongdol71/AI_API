@@ -493,6 +493,14 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 	if (bSuccess)
 	{
 		CString response = Utf8ToAnsi(result.t.c_str());
+
+		// 디버그: ANSI로 변환된 응답 저장
+		{
+			std::ofstream debugResponseAnsi("debug_response_ansi.txt", std::ios::binary);
+			debugResponseAnsi << CT2A(response);
+			debugResponseAnsi.close();
+		}
+
 		AddChatMessage(Utf8ToAnsi("AI"), response);
 	}
 	else

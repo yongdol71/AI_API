@@ -752,7 +752,16 @@ public:
                     auto& firstContent = content[0];
                     if (firstContent.contains("text"))
                     {
-                        pResult->t = UTF8ToANSI(firstContent["text"].get<std::string>());
+                        std::string responseUtf8 = firstContent["text"].get<std::string>();
+
+                        // 디버그: API 응답 UTF-8 원본 저장
+                        {
+                            std::ofstream debugResponseUtf8("debug_response_utf8.txt", std::ios::binary);
+                            debugResponseUtf8 << responseUtf8;
+                            debugResponseUtf8.close();
+                        }
+
+                        pResult->t = UTF8ToANSI(responseUtf8);
                         return true;
                     }
                 }
