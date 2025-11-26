@@ -108,7 +108,7 @@ void CAI_API_TestDlg::LoadDLL()
 	m_hDll = LoadLibraryA("aiAPI.dll");
 	if (m_hDll == nullptr)
 	{
-		MessageBox(_T("aiAPI.dll을 찾을 수 없습니다."), _T("오류"), MB_OK | MB_ICONERROR);
+		MessageBox(Utf8ToAnsi("aiAPI.dll을 찾을 수 없습니다."), Utf8ToAnsi("오류"), MB_OK | MB_ICONERROR);
 		return;
 	}
 
@@ -119,7 +119,7 @@ void CAI_API_TestDlg::LoadDLL()
 
 	if (m_pfnGetAIResponse == nullptr || m_pfnGetAIResponseWithFiles == nullptr)
 	{
-		MessageBox(_T("DLL 함수를 찾을 수 없습니다."), _T("오류"), MB_OK | MB_ICONERROR);
+		MessageBox(Utf8ToAnsi("DLL 함수를 찾을 수 없습니다."), Utf8ToAnsi("오류"), MB_OK | MB_ICONERROR);
 		UnloadDLL();
 		return;
 	}
@@ -371,7 +371,7 @@ void CAI_API_TestDlg::AppendFileAttachments()
 			fileName = fileName.Mid(pos + 1);
 
 		CString attachment;
-		attachment.Format(_T("[파일] %s\r\n"), fileName);
+		attachment.Format(Utf8ToAnsi("[파일] %s\r\n"), fileName);
 		m_ctrlChatHistory.ReplaceSel(attachment);
 	}
 
@@ -386,7 +386,7 @@ void CAI_API_TestDlg::OnBnClickedBtnAddFile()
 {
 	CFileDialog dlg(TRUE, NULL, NULL,
 		OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER,
-		_T("모든 파일 (*.*)|*.*|이미지 (*.jpg;*.png;*.gif;*.webp)|*.jpg;*.png;*.gif;*.webp|문서 (*.pdf;*.txt;*.json)|*.pdf;*.txt;*.json||"));
+		Utf8ToAnsi("모든 파일 (*.*)|*.*|이미지 (*.jpg;*.png;*.gif;*.webp)|*.jpg;*.png;*.gif;*.webp|문서 (*.pdf;*.txt;*.json)|*.pdf;*.txt;*.json||"));
 
 	const int MAX_FILES = 100;
 	const int BUFFER_SIZE = MAX_FILES * MAX_PATH;
@@ -429,7 +429,7 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 {
 	if (m_pfnGetAIResponse == nullptr && m_pfnGetAIResponseWithFiles == nullptr)
 	{
-		MessageBox(_T("DLL이 로드되지 않았습니다."), _T("오류"), MB_OK | MB_ICONERROR);
+		MessageBox(Utf8ToAnsi("DLL이 로드되지 않았습니다."), Utf8ToAnsi("오류"), MB_OK | MB_ICONERROR);
 		return;
 	}
 
@@ -437,29 +437,29 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 	m_ctrlPrompt.GetWindowText(m_strPrompt);
 	if (m_strPrompt.IsEmpty())
 	{
-		MessageBox(_T("프롬프트를 입력하세요."), _T("알림"), MB_OK | MB_ICONINFORMATION);
+		MessageBox(Utf8ToAnsi("프롬프트를 입력하세요."), Utf8ToAnsi("알림"), MB_OK | MB_ICONINFORMATION);
 		return;
 	}
 
 	// 사용자 메시지 표시
-	AddChatMessage(_T("User"), m_strPrompt);
+	AddChatMessage(Utf8ToAnsi("User"), m_strPrompt);
 	AppendFileAttachments();
 
 	// 파일 경로 배열 준비
 	int fileCount = (int)m_arrFiles.size();
 	const char** filePaths = nullptr;
-	std::vector<std::string> utf8Paths;
+	std::vector<CStringA> ansiPaths;
 
 	if (fileCount > 0)
 	{
-		utf8Paths.resize(fileCount);
+		ansiPaths.resize(fileCount);
 		filePaths = new const char* [fileCount];
 
 		for (int i = 0; i < fileCount; i++)
 		{
-			// 파일 경로를 UTF-8로 변환 (ANSI -> UTF-8)
-			utf8Paths[i] = AnsiToUtf8(CT2A(m_arrFiles[i]));
-			filePaths[i] = utf8Paths[i].c_str();
+			// 파일 경로는 ANSI로 유지 (로컬 파일 시스템 경로)
+			ansiPaths[i] = CT2A(m_arrFiles[i]);
+			filePaths[i] = ansiPaths[i].GetString();
 		}
 	}
 
@@ -482,12 +482,12 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 	if (bSuccess)
 	{
 		CString response = Utf8ToAnsi(result.t.c_str());
-		AddChatMessage(_T("AI"), response);
+		AddChatMessage(Utf8ToAnsi("AI"), response);
 	}
 	else
 	{
 		CString error = Utf8ToAnsi(result.t.c_str());
-		MessageBox(error, _T("API 오류"), MB_OK | MB_ICONERROR);
+		MessageBox(error, Utf8ToAnsi("API 오류"), MB_OK | MB_ICONERROR);
 	}
 
 	// 정리
