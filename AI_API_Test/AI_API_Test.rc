@@ -68,7 +68,9 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDR_MAINFRAME           ICON                    "res\\AI_API_Test.ico"
+// Note: 아이콘 파일이 없는 경우 Visual Studio에서 자동 생성되거나
+// 기본 아이콘이 사용됩니다. 필요시 res\AI_API_Test.ico 파일을 추가하세요.
+// IDR_MAINFRAME           ICON                    "res\\AI_API_Test.ico"
 
 
 /////////////////////////////////////////////////////////////////////////////
