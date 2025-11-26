@@ -1,0 +1,15 @@
+[Claude]
+; Anthropic Claude API Key를 여기에 입력하세요
+; https://console.anthropic.com/settings/keys 에서 발급받을 수 있습니다
+ApiKey=YOUR_API_KEY_HERE
+
+; 사용할 Claude 모델명
+; 사용 가능한 모델:
+;   - claude-sonnet-4-5      (최신, 가장 강력한 코딩 모델)
+;   - claude-opus-4-1        (가장 강력한 모델, 복잡한 작업용)
+;   - claude-haiku-4-5       (빠르고 저렴한 모델)
+;   - claude-sonnet-4        (이전 버전)
+Model=claude-sonnet-4-5
+
+; Anthropic API 버전 (변경하지 마세요)
+ApiVersion=2023-06-01
