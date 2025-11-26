@@ -10,24 +10,15 @@
 
 #pragma comment(lib,"winhttp.lib")
 
-// nlohmann/json »ç¿ë
+// nlohmann/json ì‚¬ìš©
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-// common.h include (CHATGPT_RESULT Á¤ÀÇ)
-// ÇÁ·ÎÁ§Æ®¿¡ common.h°¡ ÀÖ´Ù¸é ÀÌ°ÍÀ» »ç¿ë, ¾ø´Ù¸é ¾Æ·¡ Á¤ÀÇ »ç¿ë
-#ifndef CHATGPT_RESULT_DEFINED
-#define CHATGPT_RESULT_DEFINED
-struct CHATGPT_RESULT
-{
-    json o;
-    std::string t;
-    std::vector<char> data;
-};
-#endif
+// common.h include (CHATGPT_RESULT ì •ì˜ ë° ìœ í‹¸ë¦¬í‹° í•¨ìˆ˜)
+#include "../include/common.h"
 
 // ========================
-// ¼³Á¤ ÆÄÀÏ ·Î´õ
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Î´ï¿½
 // ========================
 class ConfigLoader
 {
@@ -46,7 +37,7 @@ public:
         std::ifstream file(configPath);
         if (!file.is_open())
         {
-            // ¼³Á¤ ÆÄÀÏÀÌ ¾øÀ¸¸é ±âº»°ªÀ¸·Î »ı¼º
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½âº»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             CreateDefaultConfig();
             return false;
         }
@@ -56,29 +47,29 @@ public:
 
         while (std::getline(file, line))
         {
-            // °ø¹é Á¦°Å
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             line.erase(0, line.find_first_not_of(" \t\r\n"));
             line.erase(line.find_last_not_of(" \t\r\n") + 1);
 
-            // ºó ÁÙÀÌ³ª ÁÖ¼® ¹«½Ã
+            // ï¿½ï¿½ ï¿½ï¿½ï¿½Ì³ï¿½ ï¿½Ö¼ï¿½ ï¿½ï¿½ï¿½ï¿½
             if (line.empty() || line[0] == ';' || line[0] == '#')
                 continue;
 
-            // ¼½¼Ç ÆÄ½Ì [Section]
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½Ä½ï¿½ [Section]
             if (line[0] == '[' && line[line.length() - 1] == ']')
             {
                 currentSection = line.substr(1, line.length() - 2);
                 continue;
             }
 
-            // Key=Value ÆÄ½Ì
+            // Key=Value ï¿½Ä½ï¿½
             size_t pos = line.find('=');
             if (pos != std::string::npos)
             {
                 std::string key = line.substr(0, pos);
                 std::string value = line.substr(pos + 1);
 
-                // ¾ÕµÚ °ø¹é Á¦°Å
+                // ï¿½Õµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 key.erase(0, key.find_first_not_of(" \t"));
                 key.erase(key.find_last_not_of(" \t") + 1);
                 value.erase(0, value.find_first_not_of(" \t"));
@@ -99,13 +90,13 @@ public:
         if (file.is_open())
         {
             file << "[Claude]\n";
-            file << "; API Key¸¦ ¿©±â¿¡ ÀÔ·ÂÇÏ¼¼¿ä\n";
+            file << "; API Keyï¿½ï¿½ ï¿½ï¿½ï¿½â¿¡ ï¿½Ô·ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½\n";
             file << "ApiKey=YOUR_API_KEY_HERE\n";
             file << "\n";
-            file << "; »ç¿ëÇÒ ¸ğµ¨¸í (claude-sonnet-4-5, claude-opus-4-1, claude-haiku-4-5 µî)\n";
+            file << "; ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ğµ¨¸ï¿½ (claude-sonnet-4-5, claude-opus-4-1, claude-haiku-4-5 ï¿½ï¿½)\n";
             file << "Model=claude-sonnet-4-5\n";
             file << "\n";
-            file << "; API ¹öÀü\n";
+            file << "; API ï¿½ï¿½ï¿½ï¿½\n";
             file << "ApiVersion=2023-06-01\n";
             file.close();
         }
@@ -126,7 +117,7 @@ public:
 };
 
 // ========================
-// ¹®ÀÚ¿­ º¯È¯ ÇÔ¼öµé
+// ï¿½ï¿½ï¿½Ú¿ï¿½ ï¿½ï¿½È¯ ï¿½Ô¼ï¿½ï¿½ï¿½
 // ========================
 std::string UTF8ToANSI(const std::string& utf8Str)
 {
@@ -134,7 +125,7 @@ std::string UTF8ToANSI(const std::string& utf8Str)
         return std::string();
     }
 
-    // UTF-8À» UTF-16À¸·Î º¯È¯
+    // UTF-8ï¿½ï¿½ UTF-16ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
     int wideLength = MultiByteToWideChar(CP_UTF8, 0, utf8Str.c_str(), -1, NULL, 0);
     if (wideLength == 0) {
         return std::string();
@@ -143,7 +134,7 @@ std::string UTF8ToANSI(const std::string& utf8Str)
     std::vector<wchar_t> wideStr(wideLength);
     MultiByteToWideChar(CP_UTF8, 0, utf8Str.c_str(), -1, &wideStr[0], wideLength);
 
-    // UTF-16À» ANSI·Î º¯È¯
+    // UTF-16ï¿½ï¿½ ANSIï¿½ï¿½ ï¿½ï¿½È¯
     int ansiLength = WideCharToMultiByte(CP_ACP, 0, &wideStr[0], -1, NULL, 0, NULL, NULL);
     if (ansiLength == 0) {
         return std::string();
@@ -161,7 +152,7 @@ std::string ANSIToUTF8(const std::string& ansiStr)
         return std::string();
     }
 
-    // ANSI¸¦ UTF-16À¸·Î º¯È¯
+    // ANSIï¿½ï¿½ UTF-16ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½È¯
     int wideLength = MultiByteToWideChar(CP_ACP, 0, ansiStr.c_str(), -1, NULL, 0);
     if (wideLength == 0) {
         return std::string();
@@ -170,7 +161,7 @@ std::string ANSIToUTF8(const std::string& ansiStr)
     std::vector<wchar_t> wideStr(wideLength);
     MultiByteToWideChar(CP_ACP, 0, ansiStr.c_str(), -1, &wideStr[0], wideLength);
 
-    // UTF-16À» UTF-8·Î º¯È¯
+    // UTF-16ï¿½ï¿½ UTF-8ï¿½ï¿½ ï¿½ï¿½È¯
     int utf8Length = WideCharToMultiByte(CP_UTF8, 0, &wideStr[0], -1, NULL, 0, NULL, NULL);
     if (utf8Length == 0) {
         return std::string();
@@ -195,10 +186,10 @@ std::wstring StringToWString(const std::string& str)
 
 std::string CreateJSONString(const std::string& inputStr)
 {
-    // ANSI¸¦ UTF-8·Î º¯È¯
+    // ANSIï¿½ï¿½ UTF-8ï¿½ï¿½ ï¿½ï¿½È¯
     std::string utf8Str = ANSIToUTF8(inputStr);
 
-    // JSON ÀÌ½ºÄÉÀÌÇÁ Ã³¸®
+    // JSON ï¿½Ì½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
     std::string jsonStr;
     jsonStr.reserve(utf8Str.length() * 2);
 
@@ -230,7 +221,7 @@ std::string CreateJSONString(const std::string& inputStr)
 }
 
 // ========================
-// WinHTTP ±â¹İ HTTP ¿äÃ» ÇÔ¼ö
+// WinHTTP ï¿½ï¿½ï¿½ HTTP ï¿½ï¿½Ã» ï¿½Ô¼ï¿½
 // ========================
 std::vector<char> WinHttpRequest(
     const std::wstring& host,
@@ -245,7 +236,7 @@ std::vector<char> WinHttpRequest(
     HINTERNET hConnect = NULL;
     HINTERNET hRequest = NULL;
 
-    // WinHTTP ¼¼¼Ç ÃÊ±âÈ­
+    // WinHTTP ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
     hSession = WinHttpOpen(
         L"Claude-API-Client/1.0",
         WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
@@ -256,7 +247,7 @@ std::vector<char> WinHttpRequest(
     if (!hSession)
         return response;
 
-    // ¼­¹ö ¿¬°á
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
     hConnect = WinHttpConnect(hSession, host.c_str(), INTERNET_DEFAULT_HTTPS_PORT, 0);
     if (!hConnect)
     {
@@ -264,7 +255,7 @@ std::vector<char> WinHttpRequest(
         return response;
     }
 
-    // ¿äÃ» »ı¼º
+    // ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½
     hRequest = WinHttpOpenRequest(
         hConnect,
         method.c_str(),
@@ -281,7 +272,7 @@ std::vector<char> WinHttpRequest(
         return response;
     }
 
-    // Çì´õ Ãß°¡
+    // ï¿½ï¿½ï¿½ ï¿½ß°ï¿½
     for (size_t i = 0; i < headers.size(); ++i)
     {
         WinHttpAddRequestHeaders(
@@ -291,7 +282,7 @@ std::vector<char> WinHttpRequest(
             WINHTTP_ADDREQ_FLAG_ADD);
     }
 
-    // ¿äÃ» Àü¼Û
+    // ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½
     BOOL bResults = WinHttpSendRequest(
         hRequest,
         WINHTTP_NO_ADDITIONAL_HEADERS,
@@ -304,7 +295,7 @@ std::vector<char> WinHttpRequest(
     if (bResults)
         bResults = WinHttpReceiveResponse(hRequest, NULL);
 
-    // ÀÀ´ä ÀĞ±â
+    // ï¿½ï¿½ï¿½ï¿½ ï¿½Ğ±ï¿½
     if (bResults)
     {
         DWORD dwSize = 0;
@@ -331,7 +322,7 @@ std::vector<char> WinHttpRequest(
         } while (dwSize > 0);
     }
 
-    // Á¤¸®
+    // ï¿½ï¿½ï¿½ï¿½
     if (hRequest) WinHttpCloseHandle(hRequest);
     if (hConnect) WinHttpCloseHandle(hConnect);
     if (hSession) WinHttpCloseHandle(hSession);
@@ -340,7 +331,7 @@ std::vector<char> WinHttpRequest(
 }
 
 // ========================
-// Claude API Å¬·¡½º
+// Claude API Å¬ï¿½ï¿½ï¿½ï¿½
 // ========================
 class CLAUDE_SONET_API
 {
@@ -353,20 +344,20 @@ private:
 public:
     CLAUDE_SONET_API(const char* configPath = "config.ini") : config(configPath)
     {
-        // ¼³Á¤ ÆÄÀÏ¿¡¼­ ·Îµå
+        // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½Îµï¿½
         apiKey = config.Get("Claude.ApiKey", "");
         model = config.Get("Claude.Model", "claude-sonnet-4-5");
         apiVersion = config.Get("Claude.ApiVersion", "2023-06-01");
 
-        // API Key °ËÁõ
+        // API Key ï¿½ï¿½ï¿½ï¿½
         if (apiKey.empty() || apiKey == "YOUR_API_KEY_HERE")
         {
             throw std::runtime_error(
-                "API Key°¡ ¼³Á¤µÇÁö ¾Ê¾Ò½À´Ï´Ù. config.ini ÆÄÀÏÀ» È®ÀÎÇÏ¼¼¿ä.");
+                "API Keyï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾Ò½ï¿½ï¿½Ï´ï¿½. config.ini ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ È®ï¿½ï¿½ï¿½Ï¼ï¿½ï¿½ï¿½.");
         }
     }
 
-    // ·¹°Å½Ã »ı¼ºÀÚ (±âÁ¸ ÄÚµå È£È¯¼º)
+    // ï¿½ï¿½ï¿½Å½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½Úµï¿½ È£È¯ï¿½ï¿½)
     CLAUDE_SONET_API(const char* api_key, bool use_as_key) : config("config.ini")
     {
         if (use_as_key)
@@ -407,7 +398,7 @@ public:
             return false;
         }
 
-        // JSON ¿äÃ» »ı¼º
+        // JSON ï¿½ï¿½Ã» ï¿½ï¿½ï¿½ï¿½
         std::vector<char> data(20000);
         sprintf_s(data.data(), 20000, u8R"({
     "model": "%s",
@@ -419,7 +410,7 @@ public:
 
         data.resize(strlen(data.data()));
 
-        // Çì´õ ÁØºñ
+        // ï¿½ï¿½ï¿½ ï¿½Øºï¿½
         std::wstring keyHeader = L"x-api-key: " + StringToWString(apiKey);
         std::wstring versionHeader = L"anthropic-version: " + StringToWString(apiVersion);
 
@@ -428,7 +419,7 @@ public:
         headers.push_back(versionHeader);
         headers.push_back(L"Content-Type: application/json");
 
-        // WinHTTP ¿äÃ»
+        // WinHTTP ï¿½ï¿½Ã»
         std::vector<char> response = WinHttpRequest(
             L"api.anthropic.com",
             L"/v1/messages",
@@ -445,17 +436,17 @@ public:
 
         response.push_back('\0');
 
-        // JSON ÆÄ½Ì (nlohmann/json »ç¿ë)
+        // JSON ï¿½Ä½ï¿½ (nlohmann/json ï¿½ï¿½ï¿½)
         try
         {
             std::string utf8String = response.data();
 //            std::string ansiString = UTF8ToANSI(utf8String);
             
-            // nlohmann/jsonÀ¸·Î ÆÄ½Ì
+            // nlohmann/jsonï¿½ï¿½ï¿½ï¿½ ï¿½Ä½ï¿½
             json j = json::parse(utf8String);
             pResult->o = j;
 
-            // ¿¡·¯ Ã¼Å©
+            // ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
             if (j.contains("error") && j["error"].is_object())
             {
                 auto& error = j["error"];
@@ -470,7 +461,7 @@ public:
                 return false;
             }
 
-            // Á¤»ó ÀÀ´ä Ã³¸®
+            // ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ Ã³ï¿½ï¿½
             if (j.contains("content") && j["content"].is_array())
             {
                 auto& content = j["content"];
@@ -509,5 +500,216 @@ public:
             pResult->t = "Error: Unknown exception during parsing";
             return false;
         }
+    }
+
+    // ========================
+    // ë©€í‹°ëª¨ë‹¬ ì§€ì›: íŒŒì¼ ì²¨ë¶€ í•¨ìˆ˜
+    // ========================
+    bool TextWithFiles(const char* prompt, const char** filePaths, int fileCount,
+                       CHATGPT_RESULT* pResult, int max_tokens = 4096)
+    {
+        if (apiKey.empty())
+        {
+            pResult->t = "Error: API Key not configured";
+            return false;
+        }
+
+        if (filePaths == nullptr || fileCount <= 0)
+        {
+            // íŒŒì¼ì´ ì—†ìœ¼ë©´ ì¼ë°˜ Text í˜¸ì¶œ
+            return Text(prompt, pResult, 0, max_tokens);
+        }
+
+        try
+        {
+            // JSON content ë°°ì—´ êµ¬ì„±
+            json contentArray = json::array();
+
+            // 1. í…ìŠ¤íŠ¸ í”„ë¡¬í”„íŠ¸ ì¶”ê°€
+            if (prompt != nullptr && strlen(prompt) > 0)
+            {
+                contentArray.push_back({
+                    {"type", "text"},
+                    {"text", CreateJSONString(prompt)}
+                });
+            }
+
+            // 2. íŒŒì¼ë“¤ ì¶”ê°€
+            for (int i = 0; i < fileCount; i++)
+            {
+                const char* filepath = filePaths[i];
+
+                // íŒŒì¼ ì½ê¸°
+                std::vector<unsigned char> fileData;
+                if (!ReadBinaryFile(filepath, fileData))
+                {
+                    pResult->t = std::string("Error: Failed to read file: ") + filepath;
+                    return false;
+                }
+
+                // íŒŒì¼ í¬ê¸° ì²´í¬ (5MB ì œí•œ)
+                const size_t MAX_FILE_SIZE = 5 * 1024 * 1024;
+                if (fileData.size() > MAX_FILE_SIZE)
+                {
+                    pResult->t = std::string("Error: File too large (max 5MB): ") + filepath;
+                    return false;
+                }
+
+                // Base64 ì¸ì½”ë”©
+                std::string base64Data = Base64Encode(fileData.data(), fileData.size());
+                if (base64Data.empty())
+                {
+                    pResult->t = std::string("Error: Failed to encode file: ") + filepath;
+                    return false;
+                }
+
+                // MIME íƒ€ì… ê°ì§€
+                std::string mimeType = GetMimeType(filepath);
+
+                // ì´ë¯¸ì§€ íŒŒì¼ ì²˜ë¦¬
+                if (IsImageFile(filepath))
+                {
+                    contentArray.push_back({
+                        {"type", "image"},
+                        {"source", {
+                            {"type", "base64"},
+                            {"media_type", mimeType},
+                            {"data", base64Data}
+                        }}
+                    });
+                }
+                // ë¬¸ì„œ íŒŒì¼ ì²˜ë¦¬ (PDF ë“±)
+                else if (IsDocumentFile(filepath))
+                {
+                    contentArray.push_back({
+                        {"type", "document"},
+                        {"source", {
+                            {"type", "base64"},
+                            {"media_type", mimeType},
+                            {"data", base64Data}
+                        }}
+                    });
+                }
+                else
+                {
+                    pResult->t = std::string("Error: Unsupported file type: ") + filepath;
+                    return false;
+                }
+            }
+
+            // JSON ìš”ì²­ ìƒì„±
+            json requestJson = {
+                {"model", model},
+                {"max_tokens", max_tokens},
+                {"messages", json::array({
+                    {
+                        {"role", "user"},
+                        {"content", contentArray}
+                    }
+                })}
+            };
+
+            std::string jsonString = requestJson.dump();
+
+            // í—¤ë” ì¤€ë¹„
+            std::wstring keyHeader = L"x-api-key: " + StringToWString(apiKey);
+            std::wstring versionHeader = L"anthropic-version: " + StringToWString(apiVersion);
+
+            std::vector<std::wstring> headers;
+            headers.push_back(keyHeader);
+            headers.push_back(versionHeader);
+            headers.push_back(L"Content-Type: application/json");
+
+            // WinHTTP ìš”ì²­
+            std::vector<char> response = WinHttpRequest(
+                L"api.anthropic.com",
+                L"/v1/messages",
+                L"POST",
+                headers,
+                jsonString.c_str(),
+                jsonString.size());
+
+            if (response.empty())
+            {
+                pResult->t = "Error: No response from API";
+                return false;
+            }
+
+            response.push_back('\0');
+
+            // JSON íŒŒì‹±
+            std::string utf8String = response.data();
+            json j = json::parse(utf8String);
+            pResult->o = j;
+
+            // ì—ëŸ¬ ì²´í¬
+            if (j.contains("error") && j["error"].is_object())
+            {
+                auto& error = j["error"];
+                if (error.contains("message"))
+                {
+                    pResult->t = "API Error: " + error["message"].get<std::string>();
+                }
+                else
+                {
+                    pResult->t = "API Error: Unknown error";
+                }
+                return false;
+            }
+
+            // ì‘ë‹µ ê²°ê³¼ ì²˜ë¦¬
+            if (j.contains("content") && j["content"].is_array())
+            {
+                auto& content = j["content"];
+                if (content.size() > 0)
+                {
+                    auto& firstContent = content[0];
+                    if (firstContent.contains("text"))
+                    {
+                        pResult->t = UTF8ToANSI(firstContent["text"].get<std::string>());
+                        return true;
+                    }
+                }
+            }
+
+            pResult->t = "Error: Unexpected response format";
+            return false;
+        }
+        catch (const json::parse_error& e)
+        {
+            pResult->t = std::string("Error: JSON parse failed - ") + e.what();
+            return false;
+        }
+        catch (const json::exception& e)
+        {
+            pResult->t = std::string("Error: JSON error - ") + e.what();
+            return false;
+        }
+        catch (const std::exception& e)
+        {
+            pResult->t = std::string("Error: ") + e.what();
+            return false;
+        }
+        catch (...)
+        {
+            pResult->t = "Error: Unknown exception";
+            return false;
+        }
+    }
+
+    // í¸ì˜ í•¨ìˆ˜: ë‹¨ì¼ ì´ë¯¸ì§€ ì²¨ë¶€
+    bool TextWithImage(const char* prompt, const char* imagePath,
+                       CHATGPT_RESULT* pResult, int max_tokens = 4096)
+    {
+        const char* files[] = { imagePath };
+        return TextWithFiles(prompt, files, 1, pResult, max_tokens);
+    }
+
+    // í¸ì˜ í•¨ìˆ˜: ë‹¨ì¼ íŒŒì¼ ì²¨ë¶€
+    bool TextWithFile(const char* prompt, const char* filePath,
+                      CHATGPT_RESULT* pResult, int max_tokens = 4096)
+    {
+        const char* files[] = { filePath };
+        return TextWithFiles(prompt, files, 1, pResult, max_tokens);
     }
 };

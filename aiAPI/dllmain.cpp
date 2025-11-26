@@ -1,4 +1,4 @@
-// dllmain.cpp : DLL ¾ÖÇÃ¸®ÄÉÀÌ¼ÇÀÇ ÁøÀÔÁ¡À» Á¤ÀÇÇÕ´Ï´Ù.
+// dllmain.cpp : DLL ï¿½ï¿½ï¿½Ã¸ï¿½ï¿½ï¿½ï¿½Ì¼ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Õ´Ï´ï¿½.
 #include "pch.h"
 #include "claude_Sonnet3_5.hpp"
 
@@ -12,11 +12,11 @@
 #define AIAPI_DLL_API __declspec(dllimport)
 #endif    
 
-// Àü¿ª Claude API ÀÎ½ºÅÏ½º (¼³Á¤ ÆÄÀÏ¿¡¼­ ·Îµå)
+// ï¿½ï¿½ï¿½ï¿½ Claude API ï¿½Î½ï¿½ï¿½Ï½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Ï¿ï¿½ï¿½ï¿½ ï¿½Îµï¿½)
 static CLAUDE_SONET_API* g_claudeAPI = nullptr;
 static std::string g_lastError;
 
-// DLL ÃÊ±âÈ­ ÇÔ¼ö
+// DLL ï¿½Ê±ï¿½È­ ï¿½Ô¼ï¿½
 bool InitializeClaudeAPI(const char* configPath)
 {
     try
@@ -43,7 +43,7 @@ bool InitializeClaudeAPI(const char* configPath)
     }
 }
 
-// DLL Á¤¸® ÇÔ¼ö
+// DLL ï¿½ï¿½ï¿½ï¿½ ï¿½Ô¼ï¿½
 void CleanupClaudeAPI()
 {
     if (g_claudeAPI != nullptr)
@@ -53,13 +53,13 @@ void CleanupClaudeAPI()
     }
 }
 /*
-// ¿¡·¯ ¸Þ½ÃÁö °¡Á®¿À±â
+// ï¿½ï¿½ï¿½ï¿½ ï¿½Þ½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 extern "C" AIAPI_DLL_API char* GetLastError()
 {
     return g_lastError.c_str();
 }*/
 
-// AI ÀÀ´ä °¡Á®¿À±â
+// AI ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 extern "C" AIAPI_DLL_API bool GetAIResponse(const char* input, CHATGPT_RESULT* result)
 {
     if (result == nullptr)
@@ -68,7 +68,7 @@ extern "C" AIAPI_DLL_API bool GetAIResponse(const char* input, CHATGPT_RESULT* r
         return false;
     }
 
-    // API°¡ ÃÊ±âÈ­µÇÁö ¾Ê¾ÒÀ¸¸é ÃÊ±âÈ­ ½Ãµµ
+    // APIï¿½ï¿½ ï¿½Ê±ï¿½È­ï¿½ï¿½ï¿½ï¿½ ï¿½Ê¾ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­ ï¿½Ãµï¿½
     if (g_claudeAPI == nullptr)
     {
         if (!InitializeClaudeAPI("config.ini"))
@@ -97,7 +97,7 @@ extern "C" AIAPI_DLL_API bool GetAIResponse(const char* input, CHATGPT_RESULT* r
     }
 }
 
-// ¼³Á¤ ÆÄÀÏ Àç·Îµå (¿É¼Ç)
+// ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Îµï¿½ (ï¿½É¼ï¿½)
 extern "C" AIAPI_DLL_API bool ReloadConfig(const char* configPath)
 {
     if (configPath == nullptr)
@@ -107,7 +107,7 @@ extern "C" AIAPI_DLL_API bool ReloadConfig(const char* configPath)
     return InitializeClaudeAPI(configPath);
 }
 
-// ÇöÀç ¸ðµ¨ ÀÌ¸§ °¡Á®¿À±â (¿É¼Ç)
+// í˜„ìž¬ ëª¨ë¸ ì´ë¦„ ê°€ì ¸ì˜¤ê¸° (ì˜µì…˜)
 extern "C" AIAPI_DLL_API const char* GetCurrentModel()
 {
     if (g_claudeAPI != nullptr)
@@ -119,6 +119,147 @@ extern "C" AIAPI_DLL_API const char* GetCurrentModel()
     return "Not initialized";
 }
 
+// ========================
+// ë©€í‹°ëª¨ë‹¬ API: ì´ë¯¸ì§€ ì²¨ë¶€
+// ========================
+extern "C" AIAPI_DLL_API bool GetAIResponseWithImage(const char* input, const char* imagePath, CHATGPT_RESULT* result)
+{
+    if (result == nullptr)
+    {
+        g_lastError = "Result pointer is null";
+        return false;
+    }
+
+    if (imagePath == nullptr)
+    {
+        g_lastError = "Image path is null";
+        result->t = "Error: " + g_lastError;
+        return false;
+    }
+
+    // APIê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ìœ¼ë©´ ì´ˆê¸°í™” ì‹œë„
+    if (g_claudeAPI == nullptr)
+    {
+        if (!InitializeClaudeAPI("config.ini"))
+        {
+            result->t = "Error: " + g_lastError;
+            return false;
+        }
+    }
+
+    try
+    {
+        BOOL bSucceed = g_claudeAPI->TextWithImage(input, imagePath, result);
+        return bSucceed ? true : false;
+    }
+    catch (const std::exception& e)
+    {
+        g_lastError = e.what();
+        result->t = "Exception: " + g_lastError;
+        return false;
+    }
+    catch (...)
+    {
+        g_lastError = "Unknown exception in GetAIResponseWithImage";
+        result->t = "Exception: " + g_lastError;
+        return false;
+    }
+}
+
+// ========================
+// ë©€í‹°ëª¨ë‹¬ API: ë‹¨ì¼ íŒŒì¼ ì²¨ë¶€
+// ========================
+extern "C" AIAPI_DLL_API bool GetAIResponseWithFile(const char* input, const char* filePath, CHATGPT_RESULT* result)
+{
+    if (result == nullptr)
+    {
+        g_lastError = "Result pointer is null";
+        return false;
+    }
+
+    if (filePath == nullptr)
+    {
+        g_lastError = "File path is null";
+        result->t = "Error: " + g_lastError;
+        return false;
+    }
+
+    // APIê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ìœ¼ë©´ ì´ˆê¸°í™” ì‹œë„
+    if (g_claudeAPI == nullptr)
+    {
+        if (!InitializeClaudeAPI("config.ini"))
+        {
+            result->t = "Error: " + g_lastError;
+            return false;
+        }
+    }
+
+    try
+    {
+        BOOL bSucceed = g_claudeAPI->TextWithFile(input, filePath, result);
+        return bSucceed ? true : false;
+    }
+    catch (const std::exception& e)
+    {
+        g_lastError = e.what();
+        result->t = "Exception: " + g_lastError;
+        return false;
+    }
+    catch (...)
+    {
+        g_lastError = "Unknown exception in GetAIResponseWithFile";
+        result->t = "Exception: " + g_lastError;
+        return false;
+    }
+}
+
+// ========================
+// ë©€í‹°ëª¨ë‹¬ API: ì—¬ëŸ¬ íŒŒì¼ ì²¨ë¶€
+// ========================
+extern "C" AIAPI_DLL_API bool GetAIResponseWithFiles(const char* input, const char** filePaths, int fileCount, CHATGPT_RESULT* result)
+{
+    if (result == nullptr)
+    {
+        g_lastError = "Result pointer is null";
+        return false;
+    }
+
+    if (filePaths == nullptr && fileCount > 0)
+    {
+        g_lastError = "File paths pointer is null";
+        result->t = "Error: " + g_lastError;
+        return false;
+    }
+
+    // APIê°€ ì´ˆê¸°í™”ë˜ì§€ ì•Šì•˜ìœ¼ë©´ ì´ˆê¸°í™” ì‹œë„
+    if (g_claudeAPI == nullptr)
+    {
+        if (!InitializeClaudeAPI("config.ini"))
+        {
+            result->t = "Error: " + g_lastError;
+            return false;
+        }
+    }
+
+    try
+    {
+        BOOL bSucceed = g_claudeAPI->TextWithFiles(input, filePaths, fileCount, result);
+        return bSucceed ? true : false;
+    }
+    catch (const std::exception& e)
+    {
+        g_lastError = e.what();
+        result->t = "Exception: " + g_lastError;
+        return false;
+    }
+    catch (...)
+    {
+        g_lastError = "Unknown exception in GetAIResponseWithFiles";
+        result->t = "Exception: " + g_lastError;
+        return false;
+    }
+}
+
 BOOL APIENTRY DllMain(HMODULE hModule,
                       DWORD  ul_reason_for_call,
                       LPVOID lpReserved)
@@ -126,7 +267,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        // DLLÀÌ ·ÎµåµÉ ¶§ ÀÚµ¿À¸·Î ÃÊ±âÈ­
+        // DLLï¿½ï¿½ ï¿½Îµï¿½ï¿½ ï¿½ï¿½ ï¿½Úµï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
         InitializeClaudeAPI("config.ini");
         break;
         
@@ -137,7 +278,7 @@ BOOL APIENTRY DllMain(HMODULE hModule,
         break;
         
     case DLL_PROCESS_DETACH:
-        // DLLÀÌ ¾ð·ÎµåµÉ ¶§ Á¤¸®
+        // DLLï¿½ï¿½ ï¿½ï¿½Îµï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         CleanupClaudeAPI();
         break;
     }
