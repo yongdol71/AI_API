@@ -674,6 +674,13 @@ public:
 
             std::string jsonString = requestJson.dump();
 
+            // 요청 크기 확인 (디버깅)
+            if (jsonString.size() > 10 * 1024 * 1024)  // 10MB 초과
+            {
+                pResult->t = "Error: Request too large (" + std::to_string(jsonString.size()) + " bytes)";
+                return false;
+            }
+
             // 헤더 준비
             std::wstring keyHeader = L"x-api-key: " + StringToWString(apiKey);
             std::wstring versionHeader = L"anthropic-version: " + StringToWString(apiVersion);
