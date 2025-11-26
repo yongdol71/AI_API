@@ -1,4 +1,4 @@
-// AI_API_Test.cpp : ���ø����̼ǿ� ���� Ŭ���� ������ �����մϴ�.
+// AI_API_Test.cpp : 애플리케이션에 대한 클래스 동작을 정의합니다.
 //
 
 #include "stdafx.h"
@@ -15,35 +15,35 @@ BEGIN_MESSAGE_MAP(CAI_API_TestApp, CWinApp)
 	ON_COMMAND(ID_HELP, &CWinApp::OnHelp)
 END_MESSAGE_MAP()
 
-// CAI_API_TestApp ����
+// CAI_API_TestApp 생성
 
 CAI_API_TestApp::CAI_API_TestApp()
 {
-	// TODO: ���⿡ ���� �ڵ带 �߰��մϴ�.
-	// InitInstance�� ��� �߿��� �ʱ�ȭ �۾��� ��ġ�մϴ�.
+	// TODO: 여기에 생성 코드를 추가합니다.
+	// InitInstance에 모든 중요한 초기화 작업을 배치합니다.
 }
 
-// ������ CAI_API_TestApp ��ü�Դϴ�.
+// 유일한 CAI_API_TestApp 개체입니다.
 
 CAI_API_TestApp theApp;
 
-// CAI_API_TestApp �ʱ�ȭ
+// CAI_API_TestApp 초기화
 
 BOOL CAI_API_TestApp::InitInstance()
 {
 	CWinApp::InitInstance();
 
-	// RichEdit ��Ʈ�� �ʱ�ȭ (�ʼ�!)
+	// RichEdit 컨트롤 초기화 (필수!)
 	AfxInitRichEdit2();
 
-	// ǥ�� �ʱ�ȭ
+	// 표준 초기화
 	SetRegistryKey(_T("AI_API_Test"));
 
 	CAI_API_TestDlg dlg;
 	m_pMainWnd = &dlg;
 	INT_PTR nResponse = dlg.DoModal();
 
-	// ��ȭ ���ڰ� �������Ƿ� ���� ���α׷��� �޽��� ������ �������� �ʰ� ���� ���α׷��� ���� �� �ֵ��� FALSE��
-	// ��ȯ�մϴ�.
+	// 대화 상자가 닫혔으므로 응용 프로그램의 메시지 펌프를 시작하지 않고 응용 프로그램을 끝낼 수 있도록 FALSE를
+	// 반환합니다.
 	return FALSE;
 }

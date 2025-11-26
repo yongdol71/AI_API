@@ -1,16 +1,16 @@
-// AI_API_Test.h : PROJECT_NAME ¾ÖÇÃ¸®ÄÉÀÌ¼Ç¿¡ ´ëÇÑ ÁÖ Çì´õ ÆÄÀÏÀÔ´Ï´Ù.
+// AI_API_Test.h : PROJECT_NAME ì• í”Œë¦¬ì¼€ì´ì…˜ì— ëŒ€í•œ ì£¼ í—¤ë” íŒŒì¼ì…ë‹ˆë‹¤.
 //
 
 #pragma once
 
 #ifndef __AFXWIN_H__
-	#error "PCH¿¡ ´ëÇØ ÀÌ ÆÄÀÏÀ» Æ÷ÇÔÇÏ±â Àü¿¡ 'stdafx.h'¸¦ Æ÷ÇÔÇÕ´Ï´Ù."
+	#error "PCHì— ëŒ€í•´ ì´ íŒŒì¼ì„ í¬í•¨í•˜ê¸° ì „ì— 'stdafx.h'ë¥¼ í¬í•¨í•©ë‹ˆë‹¤."
 #endif
 
-#include "resource.h"		// ÁÖ ±âÈ£ÀÔ´Ï´Ù.
+#include "resource.h"		// ì£¼ ê¸°í˜¸ì…ë‹ˆë‹¤.
 
 // CAI_API_TestApp:
-// ÀÌ Å¬·¡½ºÀÇ ±¸Çö¿¡ ´ëÇØ¼­´Â AI_API_Test.cppÀ»(¸¦) ÂüÁ¶ÇÏ¼¼¿ä.
+// ì´ í´ë˜ìŠ¤ì˜ êµ¬í˜„ì— ëŒ€í•´ì„œëŠ” AI_API_Test.cppì„(ë¥¼) ì°¸ì¡°í•˜ì„¸ìš”.
 //
 
 class CAI_API_TestApp : public CWinApp
@@ -18,11 +18,11 @@ class CAI_API_TestApp : public CWinApp
 public:
 	CAI_API_TestApp();
 
-// ÀçÁ¤ÀÇÀÔ´Ï´Ù.
+// ì¬ì •ì˜ì…ë‹ˆë‹¤.
 public:
 	virtual BOOL InitInstance();
 
-// ±¸ÇöÀÔ´Ï´Ù.
+// êµ¬í˜„ì…ë‹ˆë‹¤.
 
 	DECLARE_MESSAGE_MAP()
 };
