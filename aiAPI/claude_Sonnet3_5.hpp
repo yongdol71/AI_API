@@ -608,34 +608,26 @@ public:
                     }
                     else
                     {
-                        // BOM이 없으면 UTF-8 유효성 검사
-                        std::string rawText(fileData.begin(), fileData.end());
+                        // BOM이 없으면 ANSI(CP949)로 간주하고 UTF-8로 변환
+                        // Windows에서 대부분의 텍스트 파일은 ANSI로 저장됨
+                        std::string ansiText(fileData.begin(), fileData.end());
 
-                        // UTF-8로 디코딩 시도 (MB_ERR_INVALID_CHARS 플래그로 유효성 검사)
-                        int wideLen = MultiByteToWideChar(CP_UTF8, MB_ERR_INVALID_CHARS, rawText.c_str(), -1, nullptr, 0);
-
+                        // ANSI (CP949) -> Wide char
+                        int wideLen = MultiByteToWideChar(CP_ACP, 0, ansiText.c_str(), (int)ansiText.length(), nullptr, 0);
                         if (wideLen > 0)
                         {
-                            // 유효한 UTF-8 - 그대로 사용
-                            textContent = rawText;
-                        }
-                        else
-                        {
-                            // UTF-8이 아님 - ANSI(CP949)로 간주하고 UTF-8로 변환
-                            wideLen = MultiByteToWideChar(CP_ACP, 0, rawText.c_str(), -1, nullptr, 0);
-                            if (wideLen > 0)
-                            {
-                                std::vector<wchar_t> wideBuffer(wideLen);
-                                MultiByteToWideChar(CP_ACP, 0, rawText.c_str(), -1, wideBuffer.data(), wideLen);
+                            std::vector<wchar_t> wideBuffer(wideLen + 1);
+                            MultiByteToWideChar(CP_ACP, 0, ansiText.c_str(), (int)ansiText.length(), wideBuffer.data(), wideLen);
+                            wideBuffer[wideLen] = 0;
 
-                                // Wide char -> UTF-8
-                                int utf8Len = WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), -1, nullptr, 0, nullptr, nullptr);
-                                if (utf8Len > 0)
-                                {
-                                    std::vector<char> utf8Buffer(utf8Len);
-                                    WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), -1, utf8Buffer.data(), utf8Len, nullptr, nullptr);
-                                    textContent = std::string(utf8Buffer.data());
-                                }
+                            // Wide char -> UTF-8
+                            int utf8Len = WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), wideLen, nullptr, 0, nullptr, nullptr);
+                            if (utf8Len > 0)
+                            {
+                                std::vector<char> utf8Buffer(utf8Len + 1);
+                                WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), wideLen, utf8Buffer.data(), utf8Len, nullptr, nullptr);
+                                utf8Buffer[utf8Len] = 0;
+                                textContent = std::string(utf8Buffer.data());
                             }
                         }
                     }
