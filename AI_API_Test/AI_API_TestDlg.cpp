@@ -489,12 +489,12 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 		bSuccess = m_pfnGetAIResponse(promptUtf8.c_str(), &result);
 	}
 
-	// 결과 표시 (UTF-8 -> ANSI 변환)
+	// 결과 표시 (DLL에서 이미 ANSI로 변환됨)
 	if (bSuccess)
 	{
-		CString response = Utf8ToAnsi(result.t.c_str());
+		CString response(result.t.c_str());  // result.t는 이미 ANSI
 
-		// 디버그: ANSI로 변환된 응답 저장
+		// 디버그: ANSI 응답 저장
 		{
 			std::ofstream debugResponseAnsi("debug_response_ansi.txt", std::ios::binary);
 			debugResponseAnsi << CT2A(response);
@@ -505,7 +505,7 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 	}
 	else
 	{
-		CString error = Utf8ToAnsi(result.t.c_str());
+		CString error(result.t.c_str());  // result.t는 이미 ANSI
 		MessageBox(error, Utf8ToAnsi("API 오류"), MB_OK | MB_ICONERROR);
 	}
 
