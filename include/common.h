@@ -55,7 +55,16 @@ inline std::string Base64Encode(const unsigned char* data, size_t length)
 // ========================
 inline bool ReadBinaryFile(const char* filepath, std::vector<unsigned char>& outData)
 {
-    std::ifstream file(filepath, std::ios::binary | std::ios::ate);
+    // ANSI -> Wide char 변환 (한글 경로 지원)
+    int wideLen = MultiByteToWideChar(CP_ACP, 0, filepath, -1, nullptr, 0);
+    if (wideLen == 0)
+        return false;
+
+    std::vector<wchar_t> wideBuffer(wideLen);
+    MultiByteToWideChar(CP_ACP, 0, filepath, -1, wideBuffer.data(), wideLen);
+
+    // Wide char로 파일 열기
+    std::ifstream file(wideBuffer.data(), std::ios::binary | std::ios::ate);
     if (!file.is_open())
         return false;
 
