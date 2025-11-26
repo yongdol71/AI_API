@@ -1,0 +1,69 @@
+[Attached: 1 mobile view image + 1 ROI coordinate JSON file]
+Task Objective
+Analyze and categorize each ROI in the image to identify GUI components, then organize results in a table format
+Basic Information
+
+Image size: 540x1506 pt (same unit as JSON coordinates)
+JSON structure: {ID, absoluteBoundingBox{x, y, width, height}}
+
+GUI Component Classification Criteria
+1. Interactive Elements
+
+Button: Clickable single-action element
+Dropdown: Expandable menu for option selection
+Checkbox: Toggle for multiple selections
+Radio: Toggle for single selection
+Text Input: User input field
+Tab: Screen navigation element
+
+2. Visual Elements
+
+Icon: Small graphic element, nearly square-shaped (typically under 50pt)
+Image: Decorative/informational graphic element (not an icon)
+Label/Tag: Text badge for displaying information
+
+3. Structural Elements
+
+Container: Grouping element that holds other components
+
+Grid rows should also be classified as containers
+
+
+Card: Independent UI unit grouping related information
+Card Grid: Collection container specifically for cards
+Grid/Table: Structured data display
+Graph: Data visualization chart
+
+Analysis Guidelines
+
+Identify Hierarchy: Analyze from parent containers to child elements in order
+Handle Duplicates: When multiple IDs exist in the same area, specify each role separately
+Indicate States: Note activation/deactivation, selected/unselected states when clear
+Naming Consistency: Use identical naming for components with the same function
+Text Content: Include displayed text for buttons/labels/tags in "Description" column
+Language: Provide all descriptions in Korean (한글)
+
+Output Format
+Format the result as a CSV table with the following specifications:
+
+Columns: ID,GUI Component,Coordinates,Description
+Sort from top to bottom of the screen
+Express coordinates concisely as (x, y, w, h) format
+Write all descriptions in Korean
+Each line must end with a newline character
+Wrap the entire CSV output with:
+
+CSV_Start (followed by newline) at the beginning
+CSV_End (followed by newline) at the end
+
+
+This format allows for easy parsing of results
+
+Example format:
+CSV_Start
+ID,GUI Component,Coordinates,Description
+1,Button,"(10, 20, 100, 40)",로그인 버튼\n
+2,Grid,"(10, 210, 100, 400)",상세 정보\n
+CSV_End
+Important: Response Format
+Provide ONLY the CSV table in your response. Do not include any explanations, commentary, preamble, or postamble. Just the CSV table wrapped with CSV_Start and CSV_End markers.

@@ -10,21 +10,12 @@
 
 #pragma comment(lib,"winhttp.lib")
 
-// nlohmann/json ���
+// nlohmann/json 사용
 #include <nlohmann/json.hpp>
 using json = nlohmann::json;
 
-// common.h include (CHATGPT_RESULT ����)
-// ������Ʈ�� common.h�� �ִٸ� �̰��� ���, ���ٸ� �Ʒ� ���� ���
-#ifndef CHATGPT_RESULT_DEFINED
-#define CHATGPT_RESULT_DEFINED
-struct CHATGPT_RESULT
-{
-    json o;
-    std::string t;
-    std::vector<char> data;
-};
-#endif
+// common.h include (CHATGPT_RESULT 정의 및 유틸리티 함수)
+#include "../include/common.h"
 
 // ========================
 // ���� ���� �δ�
@@ -514,5 +505,311 @@ public:
             pResult->t = "Error: Unknown exception during parsing";
             return false;
         }
+    }
+
+    // ========================
+    // 멀티모달 지원: 파일 첨부 함수
+    // ========================
+    bool TextWithFiles(const char* prompt, const char** filePaths, int fileCount,
+                       CHATGPT_RESULT* pResult, int max_tokens = 4096)
+    {
+        if (apiKey.empty())
+        {
+            pResult->t = "Error: API Key not configured";
+            return false;
+        }
+
+        if (filePaths == nullptr || fileCount <= 0)
+        {
+            // 파일이 없으면 일반 Text 호출
+            return Text(prompt, pResult, 0, max_tokens);
+        }
+
+        try
+        {
+            // JSON content 배열 구성
+            json contentArray = json::array();
+
+            // 1. 텍스트 프롬프트 추가
+            if (prompt != nullptr && strlen(prompt) > 0)
+            {
+                contentArray.push_back({
+                    {"type", "text"},
+                    {"text", prompt}  // nlohmann/json이 UTF-8과 JSON 이스케이프를 자동 처리
+                });
+            }
+
+            // 2. 파일들 추가
+            for (int i = 0; i < fileCount; i++)
+            {
+                const char* filepath = filePaths[i];
+
+                // 파일 읽기
+                std::vector<unsigned char> fileData;
+                if (!ReadBinaryFile(filepath, fileData))
+                {
+                    pResult->t = std::string("Error: Failed to read file: ") + ANSIToUTF8(filepath);
+                    return false;
+                }
+
+                // 파일 크기 체크 (5MB 제한)
+                const size_t MAX_FILE_SIZE = 5 * 1024 * 1024;
+                if (fileData.size() > MAX_FILE_SIZE)
+                {
+                    pResult->t = std::string("Error: File too large (max 5MB): ") + ANSIToUTF8(filepath);
+                    return false;
+                }
+
+                // Base64 인코딩
+                std::string base64Data = Base64Encode(fileData.data(), fileData.size());
+                if (base64Data.empty())
+                {
+                    pResult->t = std::string("Error: Failed to encode file: ") + ANSIToUTF8(filepath);
+                    return false;
+                }
+
+                // MIME 타입 감지
+                std::string mimeType = GetMimeType(filepath);
+
+                // 이미지 파일 처리
+                if (IsImageFile(filepath))
+                {
+                    contentArray.push_back({
+                        {"type", "image"},
+                        {"source", {
+                            {"type", "base64"},
+                            {"media_type", mimeType},
+                            {"data", base64Data}
+                        }}
+                    });
+                }
+                // PDF 문서 파일 처리
+                else if (IsPdfFile(filepath))
+                {
+                    contentArray.push_back({
+                        {"type", "document"},
+                        {"source", {
+                            {"type", "base64"},
+                            {"media_type", mimeType},
+                            {"data", base64Data}
+                        }}
+                    });
+                }
+                // 텍스트 파일 처리 (JSON, TXT, XML 등)
+                else if (IsTextFile(filepath))
+                {
+                    std::string textContent;
+
+                    // UTF-8 BOM 확인 (EF BB BF)
+                    bool hasUtf8Bom = (fileData.size() >= 3 &&
+                                      fileData[0] == 0xEF &&
+                                      fileData[1] == 0xBB &&
+                                      fileData[2] == 0xBF);
+
+                    if (hasUtf8Bom)
+                    {
+                        // UTF-8 BOM이 있으면 BOM을 제거하고 UTF-8 그대로 사용
+                        textContent = std::string(fileData.begin() + 3, fileData.end());
+                    }
+                    else
+                    {
+                        // BOM이 없으면 ANSI(CP949)로 간주하고 UTF-8로 변환
+                        // Windows에서 대부분의 텍스트 파일은 ANSI로 저장됨
+                        std::string ansiText(fileData.begin(), fileData.end());
+
+                        // 디버그: 원본 ANSI 저장
+                        {
+                            std::ofstream debugFileAnsi("debug_file_ansi.txt", std::ios::binary);
+                            debugFileAnsi.write(ansiText.c_str(), ansiText.length());
+                            debugFileAnsi.close();
+                        }
+
+                        // ANSI (CP949) -> Wide char
+                        int wideLen = MultiByteToWideChar(CP_ACP, 0, ansiText.c_str(), (int)ansiText.length(), nullptr, 0);
+                        if (wideLen > 0)
+                        {
+                            std::vector<wchar_t> wideBuffer(wideLen + 1);
+                            MultiByteToWideChar(CP_ACP, 0, ansiText.c_str(), (int)ansiText.length(), wideBuffer.data(), wideLen);
+                            wideBuffer[wideLen] = 0;
+
+                            // Wide char -> UTF-8
+                            int utf8Len = WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), wideLen, nullptr, 0, nullptr, nullptr);
+                            if (utf8Len > 0)
+                            {
+                                std::vector<char> utf8Buffer(utf8Len + 1);
+                                WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), wideLen, utf8Buffer.data(), utf8Len, nullptr, nullptr);
+                                utf8Buffer[utf8Len] = 0;
+                                textContent = std::string(utf8Buffer.data());
+
+                                // 디버그: 변환된 UTF-8 저장
+                                {
+                                    std::ofstream debugFileUtf8("debug_file_utf8.txt", std::ios::binary);
+                                    debugFileUtf8.write(textContent.c_str(), textContent.length());
+                                    debugFileUtf8.close();
+                                }
+                            }
+                        }
+                    }
+
+                    // 파일명 추출
+                    std::string filename = filepath;
+                    size_t lastSlash = filename.find_last_of("\\/");
+                    if (lastSlash != std::string::npos)
+                        filename = filename.substr(lastSlash + 1);
+
+                    // 파일명을 ANSI에서 UTF-8로 변환
+                    std::string filenameUtf8 = ANSIToUTF8(filename);
+
+                    // 텍스트 블록으로 추가 (filename과 textContent 모두 UTF-8)
+                    std::string textBlock = std::string("File: ") + filenameUtf8 + "\n\n" + textContent;
+                    contentArray.push_back({
+                        {"type", "text"},
+                        {"text", textBlock}  // nlohmann/json이 UTF-8과 JSON 이스케이프를 자동 처리
+                    });
+                }
+                else
+                {
+                    pResult->t = std::string("Error: Unsupported file type: ") + ANSIToUTF8(filepath);
+                    return false;
+                }
+            }
+
+            // JSON 요청 생성
+            json requestJson = {
+                {"model", model},
+                {"max_tokens", max_tokens},
+                {"messages", json::array({
+                    {
+                        {"role", "user"},
+                        {"content", contentArray}
+                    }
+                })}
+            };
+
+            std::string jsonString = requestJson.dump();
+
+            // 디버그: 최종 JSON 요청 저장
+            {
+                std::ofstream debugJson("debug_request.json", std::ios::binary);
+                debugJson << requestJson.dump(2);  // pretty print
+                debugJson.close();
+            }
+
+            // 요청 크기 확인 (디버깅)
+            if (jsonString.size() > 10 * 1024 * 1024)  // 10MB 초과
+            {
+                pResult->t = "Error: Request too large (" + std::to_string(jsonString.size()) + " bytes)";
+                return false;
+            }
+
+            // 헤더 준비
+            std::wstring keyHeader = L"x-api-key: " + StringToWString(apiKey);
+            std::wstring versionHeader = L"anthropic-version: " + StringToWString(apiVersion);
+
+            std::vector<std::wstring> headers;
+            headers.push_back(keyHeader);
+            headers.push_back(versionHeader);
+            headers.push_back(L"Content-Type: application/json");
+
+            // WinHTTP 요청
+            std::vector<char> response = WinHttpRequest(
+                L"api.anthropic.com",
+                L"/v1/messages",
+                L"POST",
+                headers,
+                jsonString.c_str(),
+                jsonString.size());
+
+            if (response.empty())
+            {
+                pResult->t = "Error: No response from API";
+                return false;
+            }
+
+            response.push_back('\0');
+
+            // JSON 파싱
+            std::string utf8String = response.data();
+            json j = json::parse(utf8String);
+            pResult->o = j;
+
+            // 에러 체크
+            if (j.contains("error") && j["error"].is_object())
+            {
+                auto& error = j["error"];
+                if (error.contains("message"))
+                {
+                    pResult->t = "API Error: " + error["message"].get<std::string>();
+                }
+                else
+                {
+                    pResult->t = "API Error: Unknown error";
+                }
+                return false;
+            }
+
+            // 응답 결과 처리
+            if (j.contains("content") && j["content"].is_array())
+            {
+                auto& content = j["content"];
+                if (content.size() > 0)
+                {
+                    auto& firstContent = content[0];
+                    if (firstContent.contains("text"))
+                    {
+                        std::string responseUtf8 = firstContent["text"].get<std::string>();
+
+                        // 디버그: API 응답 UTF-8 원본 저장
+                        {
+                            std::ofstream debugResponseUtf8("debug_response_utf8.txt", std::ios::binary);
+                            debugResponseUtf8 << responseUtf8;
+                            debugResponseUtf8.close();
+                        }
+
+                        pResult->t = UTF8ToANSI(responseUtf8);
+                        return true;
+                    }
+                }
+            }
+
+            pResult->t = "Error: Unexpected response format";
+            return false;
+        }
+        catch (const json::parse_error& e)
+        {
+            pResult->t = std::string("Error: JSON parse failed - ") + e.what();
+            return false;
+        }
+        catch (const json::exception& e)
+        {
+            pResult->t = std::string("Error: JSON error - ") + e.what();
+            return false;
+        }
+        catch (const std::exception& e)
+        {
+            pResult->t = std::string("Error: ") + e.what();
+            return false;
+        }
+        catch (...)
+        {
+            pResult->t = "Error: Unknown exception";
+            return false;
+        }
+    }
+
+    // 편의 함수: 단일 이미지 첨부
+    bool TextWithImage(const char* prompt, const char* imagePath,
+                       CHATGPT_RESULT* pResult, int max_tokens = 4096)
+    {
+        const char* files[] = { imagePath };
+        return TextWithFiles(prompt, files, 1, pResult, max_tokens);
+    }
+
+    // 편의 함수: 단일 파일 첨부
+    bool TextWithFile(const char* prompt, const char* filePath,
+                      CHATGPT_RESULT* pResult, int max_tokens = 4096)
+    {
+        const char* files[] = { filePath };
+        return TextWithFiles(prompt, files, 1, pResult, max_tokens);
     }
 };

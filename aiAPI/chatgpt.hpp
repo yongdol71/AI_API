@@ -10,16 +10,17 @@
 #include <map>
 #include <memory>
 
-#pragma comment(lib,"winhttp.h")
+#pragma comment(lib,"winhttp.lib")
 
-#include "claude_Sonnet3_5.hpp"
+// common.h include (유틸리티 함수)
+#include "../include/common.h"
 
-// WinHTTP�� ����� ������ HTTP GET ��û
+// WinHTTP�� ����� ������ HTTP GET ��û
 std::vector<char> Fetch(const char* urlStr)
 {
     std::vector<char> result;
     
-    // URL �Ľ�
+    // URL �Ľ�
     std::wstring wUrl;
     int len = MultiByteToWideChar(CP_UTF8, 0, urlStr, -1, NULL, 0);
     if (len > 0)
@@ -128,7 +129,7 @@ std::vector<char> Fetch(const char* urlStr)
     return result;
 }
 
-// WinHTTP ��û ���� �Լ�
+// WinHTTP ��û ���� �Լ�
 std::vector<char> WinHttpPostRequest(
     const std::wstring& host,
     const std::wstring& path,
@@ -191,7 +192,7 @@ public:
 
         try
         {
-            // nlohmann/json ���
+            // nlohmann/json ���
             json j = json::parse(out.data());
             
             CHATGPT_RESULT r;
@@ -214,7 +215,7 @@ public:
         }
         catch (const json::exception& e)
         {
-            // JSON �Ľ� ����
+            // JSON �Ľ� ����
         }
         return {};
     }
@@ -253,7 +254,7 @@ public:
 
         try
         {
-            // nlohmann/json ���
+            // nlohmann/json ���
             json j = json::parse(out.data());
 
             CHATGPT_RESULT result;
@@ -283,13 +284,291 @@ public:
         }
         catch (const json::exception& e)
         {
-            // JSON �Ľ� ����
+            // JSON 파싱 실패
         }
         return {};
     }
+
+    // ========================
+    // Vision API: 이미지와 함께 질문
+    // ========================
+    CHATGPT_RESULT TextWithImage(const char* prompt, const char* imagePath, int max_tokens = 1000)
+    {
+        CHATGPT_RESULT result;
+
+        try
+        {
+            // 파일 읽기
+            std::vector<unsigned char> fileData;
+            if (!ReadBinaryFile(imagePath, fileData))
+            {
+                result.t = std::string("Error: Failed to read image file: ") + imagePath;
+                return result;
+            }
+
+            // 파일 크기 체크 (20MB 제한)
+            const size_t MAX_FILE_SIZE = 20 * 1024 * 1024;
+            if (fileData.size() > MAX_FILE_SIZE)
+            {
+                result.t = std::string("Error: Image file too large (max 20MB): ") + imagePath;
+                return result;
+            }
+
+            // Base64 인코딩
+            std::string base64Data = Base64Encode(fileData.data(), fileData.size());
+            if (base64Data.empty())
+            {
+                result.t = "Error: Failed to encode image";
+                return result;
+            }
+
+            // MIME 타입 감지
+            std::string mimeType = GetMimeType(imagePath);
+            if (!IsImageFile(imagePath))
+            {
+                result.t = "Error: File is not a supported image format";
+                return result;
+            }
+
+            // JSON 요청 생성 (GPT-4 Vision)
+            json contentArray = json::array();
+
+            // 텍스트 추가
+            if (prompt != nullptr && strlen(prompt) > 0)
+            {
+                contentArray.push_back({
+                    {"type", "text"},
+                    {"text", prompt}
+                });
+            }
+
+            // 이미지 추가
+            contentArray.push_back({
+                {"type", "image_url"},
+                {"image_url", {
+                    {"url", "data:" + mimeType + ";base64," + base64Data}
+                }}
+            });
+
+            json requestJson = {
+                {"model", "gpt-4o"},  // Vision 지원 모델
+                {"messages", json::array({
+                    {
+                        {"role", "user"},
+                        {"content", contentArray}
+                    }
+                })},
+                {"max_tokens", max_tokens}
+            };
+
+            std::string jsonString = requestJson.dump();
+
+            // 헤더 준비
+            std::wstring keyHeader = Bearer();
+            std::wstring contentType = L"Content-Type: application/json";
+
+            std::vector<std::wstring> headers;
+            headers.push_back(keyHeader);
+            headers.push_back(contentType);
+
+            // WinHTTP 요청
+            std::vector<char> out = WinHttpPostRequest(
+                L"api.openai.com",
+                L"/v1/chat/completions",
+                L"POST",
+                headers,
+                jsonString.c_str(),
+                jsonString.size());
+
+            out.push_back('\0');
+
+            // JSON 파싱
+            json j = json::parse(out.data());
+            result.o = j;
+
+            if (j.contains("error") && j["error"].is_object())
+            {
+                auto& error = j["error"];
+                result.t = error["message"].get<std::string>();
+            }
+            else if (j.contains("choices") && j["choices"].is_array())
+            {
+                auto& choices = j["choices"];
+                if (choices.size() > 0)
+                {
+                    auto& firstChoice = choices[0];
+                    auto& message = firstChoice["message"];
+                    result.t = message["content"].get<std::string>();
+                }
+            }
+            else
+            {
+                result.t = "Unexpected response format.";
+            }
+
+            return result;
+        }
+        catch (const json::exception& e)
+        {
+            result.t = std::string("JSON Error: ") + e.what();
+            return result;
+        }
+        catch (const std::exception& e)
+        {
+            result.t = std::string("Error: ") + e.what();
+            return result;
+        }
+        catch (...)
+        {
+            result.t = "Unknown error";
+            return result;
+        }
+    }
+
+    // ========================
+    // Vision API: 여러 이미지와 함께 질문
+    // ========================
+    CHATGPT_RESULT TextWithImages(const char* prompt, const char** imagePaths, int imageCount, int max_tokens = 1000)
+    {
+        CHATGPT_RESULT result;
+
+        try
+        {
+            // JSON content 배열 구성
+            json contentArray = json::array();
+
+            // 텍스트 추가
+            if (prompt != nullptr && strlen(prompt) > 0)
+            {
+                contentArray.push_back({
+                    {"type", "text"},
+                    {"text", prompt}
+                });
+            }
+
+            // 이미지들 추가
+            for (int i = 0; i < imageCount; i++)
+            {
+                const char* imagePath = imagePaths[i];
+
+                // 파일 읽기
+                std::vector<unsigned char> fileData;
+                if (!ReadBinaryFile(imagePath, fileData))
+                {
+                    result.t = std::string("Error: Failed to read image file: ") + imagePath;
+                    return result;
+                }
+
+                // 파일 크기 체크
+                const size_t MAX_FILE_SIZE = 20 * 1024 * 1024;
+                if (fileData.size() > MAX_FILE_SIZE)
+                {
+                    result.t = std::string("Error: Image file too large (max 20MB): ") + imagePath;
+                    return result;
+                }
+
+                // Base64 인코딩
+                std::string base64Data = Base64Encode(fileData.data(), fileData.size());
+                if (base64Data.empty())
+                {
+                    result.t = std::string("Error: Failed to encode image: ") + imagePath;
+                    return result;
+                }
+
+                // MIME 타입 감지
+                std::string mimeType = GetMimeType(imagePath);
+                if (!IsImageFile(imagePath))
+                {
+                    result.t = std::string("Error: File is not a supported image: ") + imagePath;
+                    return result;
+                }
+
+                // 이미지 추가
+                contentArray.push_back({
+                    {"type", "image_url"},
+                    {"image_url", {
+                        {"url", "data:" + mimeType + ";base64," + base64Data}
+                    }}
+                });
+            }
+
+            json requestJson = {
+                {"model", "gpt-4o"},
+                {"messages", json::array({
+                    {
+                        {"role", "user"},
+                        {"content", contentArray}
+                    }
+                })},
+                {"max_tokens", max_tokens}
+            };
+
+            std::string jsonString = requestJson.dump();
+
+            // 헤더 준비
+            std::wstring keyHeader = Bearer();
+            std::wstring contentType = L"Content-Type: application/json";
+
+            std::vector<std::wstring> headers;
+            headers.push_back(keyHeader);
+            headers.push_back(contentType);
+
+            // WinHTTP 요청
+            std::vector<char> out = WinHttpPostRequest(
+                L"api.openai.com",
+                L"/v1/chat/completions",
+                L"POST",
+                headers,
+                jsonString.c_str(),
+                jsonString.size());
+
+            out.push_back('\0');
+
+            // JSON 파싱
+            json j = json::parse(out.data());
+            result.o = j;
+
+            if (j.contains("error") && j["error"].is_object())
+            {
+                auto& error = j["error"];
+                result.t = error["message"].get<std::string>();
+            }
+            else if (j.contains("choices") && j["choices"].is_array())
+            {
+                auto& choices = j["choices"];
+                if (choices.size() > 0)
+                {
+                    auto& firstChoice = choices[0];
+                    auto& message = firstChoice["message"];
+                    result.t = message["content"].get<std::string>();
+                }
+            }
+            else
+            {
+                result.t = "Unexpected response format.";
+            }
+
+            return result;
+        }
+        catch (const json::exception& e)
+        {
+            result.t = std::string("JSON Error: ") + e.what();
+            return result;
+        }
+        catch (const std::exception& e)
+        {
+            result.t = std::string("Error: ") + e.what();
+            return result;
+        }
+        catch (...)
+        {
+            result.t = "Unknown error";
+            return result;
+        }
+    }
 };
 
-// WinHTTP ��û ���� �Լ� ����
+// WinHTTP ��û ���� �Լ� ����
 std::vector<char> WinHttpPostRequest(
     const std::wstring& host,
     const std::wstring& path,
