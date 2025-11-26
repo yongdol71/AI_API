@@ -78,4 +78,6 @@ private:
 	void AddChatMessage(const CString& role, const CString& text);
 	void AppendFileAttachments();
 	void SetChatColor(COLORREF color);
+	CString Utf8ToAnsi(const char* utf8Str);
+	std::string AnsiToUtf8(const char* ansiStr);
 };

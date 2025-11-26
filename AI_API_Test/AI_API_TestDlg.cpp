@@ -129,7 +129,7 @@ void CAI_API_TestDlg::LoadDLL()
 	{
 		const char* model = m_pfnGetCurrentModel();
 		CString title;
-		title.Format(_T("AI API Tester - %S"), model);
+		title.Format(_T("AI API Tester - %s"), model);
 		SetWindowText(title);
 	}
 }
@@ -259,6 +259,54 @@ void CAI_API_TestDlg::SaveDefaultPrompt()
 // 대화 내역 관리
 // ========================================
 
+CString CAI_API_TestDlg::Utf8ToAnsi(const char* utf8Str)
+{
+	if (utf8Str == nullptr || utf8Str[0] == '\0')
+		return CString("");
+
+	// UTF-8 -> Unicode
+	int wideLen = MultiByteToWideChar(CP_UTF8, 0, utf8Str, -1, nullptr, 0);
+	if (wideLen == 0)
+		return CString("");
+
+	std::vector<wchar_t> wideBuffer(wideLen);
+	MultiByteToWideChar(CP_UTF8, 0, utf8Str, -1, wideBuffer.data(), wideLen);
+
+	// Unicode -> ANSI (CP949)
+	int ansiLen = WideCharToMultiByte(CP_ACP, 0, wideBuffer.data(), -1, nullptr, 0, nullptr, nullptr);
+	if (ansiLen == 0)
+		return CString("");
+
+	std::vector<char> ansiBuffer(ansiLen);
+	WideCharToMultiByte(CP_ACP, 0, wideBuffer.data(), -1, ansiBuffer.data(), ansiLen, nullptr, nullptr);
+
+	return CString(ansiBuffer.data());
+}
+
+std::string CAI_API_TestDlg::AnsiToUtf8(const char* ansiStr)
+{
+	if (ansiStr == nullptr || ansiStr[0] == '\0')
+		return std::string("");
+
+	// ANSI (CP949) -> Unicode
+	int wideLen = MultiByteToWideChar(CP_ACP, 0, ansiStr, -1, nullptr, 0);
+	if (wideLen == 0)
+		return std::string("");
+
+	std::vector<wchar_t> wideBuffer(wideLen);
+	MultiByteToWideChar(CP_ACP, 0, ansiStr, -1, wideBuffer.data(), wideLen);
+
+	// Unicode -> UTF-8
+	int utf8Len = WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), -1, nullptr, 0, nullptr, nullptr);
+	if (utf8Len == 0)
+		return std::string("");
+
+	std::vector<char> utf8Buffer(utf8Len);
+	WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), -1, utf8Buffer.data(), utf8Len, nullptr, nullptr);
+
+	return std::string(utf8Buffer.data());
+}
+
 void CAI_API_TestDlg::AddChatMessage(const CString& role, const CString& text)
 {
 	// 현재 선택 위치 저장
@@ -323,7 +371,7 @@ void CAI_API_TestDlg::AppendFileAttachments()
 			fileName = fileName.Mid(pos + 1);
 
 		CString attachment;
-		attachment.Format(_T("📎 %s\r\n"), fileName);
+		attachment.Format(_T("[파일] %s\r\n"), fileName);
 		m_ctrlChatHistory.ReplaceSel(attachment);
 	}
 
@@ -400,43 +448,45 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 	// 파일 경로 배열 준비
 	int fileCount = (int)m_arrFiles.size();
 	const char** filePaths = nullptr;
-	std::vector<CStringA> ansiPaths;
+	std::vector<std::string> utf8Paths;
 
 	if (fileCount > 0)
 	{
-		ansiPaths.resize(fileCount);
+		utf8Paths.resize(fileCount);
 		filePaths = new const char* [fileCount];
 
 		for (int i = 0; i < fileCount; i++)
 		{
-			ansiPaths[i] = CT2A(m_arrFiles[i]);
-			filePaths[i] = ansiPaths[i].GetString();
+			// 파일 경로를 UTF-8로 변환 (ANSI -> UTF-8)
+			utf8Paths[i] = AnsiToUtf8(CT2A(m_arrFiles[i]));
+			filePaths[i] = utf8Paths[i].c_str();
 		}
 	}
 
+	// 프롬프트를 UTF-8로 변환 (ANSI -> UTF-8)
+	std::string promptUtf8 = AnsiToUtf8(CT2A(m_strPrompt));
+
 	// DLL 호출
 	CHATGPT_RESULT result;
-	CStringA promptAnsi = CT2A(m_strPrompt);
-
 	BOOL bSuccess = FALSE;
 	if (fileCount > 0)
 	{
-		bSuccess = m_pfnGetAIResponseWithFiles(promptAnsi, filePaths, fileCount, &result);
+		bSuccess = m_pfnGetAIResponseWithFiles(promptUtf8.c_str(), filePaths, fileCount, &result);
 	}
 	else
 	{
-		bSuccess = m_pfnGetAIResponse(promptAnsi, &result);
+		bSuccess = m_pfnGetAIResponse(promptUtf8.c_str(), &result);
 	}
 
-	// 결과 표시
+	// 결과 표시 (UTF-8 -> ANSI 변환)
 	if (bSuccess)
 	{
-		CString response = CA2T(result.t.c_str());
+		CString response = Utf8ToAnsi(result.t.c_str());
 		AddChatMessage(_T("AI"), response);
 	}
 	else
 	{
-		CString error = CA2T(result.t.c_str());
+		CString error = Utf8ToAnsi(result.t.c_str());
 		MessageBox(error, _T("API 오류"), MB_OK | MB_ICONERROR);
 	}
 
