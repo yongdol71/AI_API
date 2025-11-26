@@ -1,4 +1,4 @@
-// AI_API_TestDlg.cpp : êµ¬í˜„ íŒŒì¼
+// AI_API_TestDlg.cpp : ±¸Çö ÆÄÀÏ
 //
 
 #include "stdafx.h"
@@ -11,7 +11,7 @@
 #define new DEBUG_NEW
 #endif
 
-// CAI_API_TestDlg ëŒ€í™” ìƒì
+// CAI_API_TestDlg ´ëÈ­ »óÀÚ
 
 CAI_API_TestDlg::CAI_API_TestDlg(CWnd* pParent /*=nullptr*/)
 	: CDialogEx(IDD_AIAPI_TEST_DIALOG, pParent)
@@ -48,22 +48,22 @@ BEGIN_MESSAGE_MAP(CAI_API_TestDlg, CDialogEx)
 	ON_BN_CLICKED(IDC_BTN_LOAD_DEFAULT, &CAI_API_TestDlg::OnBnClickedBtnLoadDefault)
 END_MESSAGE_MAP()
 
-// CAI_API_TestDlg ë©”ì‹œì§€ ì²˜ë¦¬ê¸°
+// CAI_API_TestDlg ¸Ş½ÃÁö Ã³¸®±â
 
 BOOL CAI_API_TestDlg::OnInitDialog()
 {
 	CDialogEx::OnInitDialog();
 
-	SetIcon(m_hIcon, TRUE);			// í° ì•„ì´ì½˜ì„ ì„¤ì •í•©ë‹ˆë‹¤.
-	SetIcon(m_hIcon, FALSE);		// ì‘ì€ ì•„ì´ì½˜ì„ ì„¤ì •í•©ë‹ˆë‹¤.
+	SetIcon(m_hIcon, TRUE);			// Å« ¾ÆÀÌÄÜÀ» ¼³Á¤ÇÕ´Ï´Ù.
+	SetIcon(m_hIcon, FALSE);		// ÀÛÀº ¾ÆÀÌÄÜÀ» ¼³Á¤ÇÕ´Ï´Ù.
 
-	// DLL ë¡œë“œ
+	// DLL ·Îµå
 	LoadDLL();
 
-	// ê¸°ë³¸ í”„ë¡¬í”„íŠ¸ ë¡œë“œ
+	// ±âº» ÇÁ·ÒÇÁÆ® ·Îµå
 	LoadDefaultPrompt();
 
-	// RichEdit ì„¤ì •
+	// RichEdit ¼³Á¤
 	m_ctrlChatHistory.SetReadOnly(TRUE);
 	m_ctrlChatHistory.SetBackgroundColor(FALSE, RGB(255, 255, 255));
 
@@ -99,32 +99,32 @@ HCURSOR CAI_API_TestDlg::OnQueryDragIcon()
 }
 
 // ========================================
-// DLL ê´€ë¦¬
+// DLL °ü¸®
 // ========================================
 
 void CAI_API_TestDlg::LoadDLL()
 {
-	// aiAPI.dll ë¡œë“œ
+	// aiAPI.dll ·Îµå
 	m_hDll = LoadLibraryA("aiAPI.dll");
 	if (m_hDll == nullptr)
 	{
-		MessageBox(_T("aiAPI.dllì„ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤."), _T("ì˜¤ë¥˜"), MB_OK | MB_ICONERROR);
+		MessageBox(_T("aiAPI.dllÀ» Ã£À» ¼ö ¾ø½À´Ï´Ù."), _T("¿À·ù"), MB_OK | MB_ICONERROR);
 		return;
 	}
 
-	// í•¨ìˆ˜ í¬ì¸í„° ê°€ì ¸ì˜¤ê¸°
+	// ÇÔ¼ö Æ÷ÀÎÅÍ °¡Á®¿À±â
 	m_pfnGetAIResponse = (PFN_GetAIResponse)GetProcAddress(m_hDll, "GetAIResponse");
 	m_pfnGetAIResponseWithFiles = (PFN_GetAIResponseWithFiles)GetProcAddress(m_hDll, "GetAIResponseWithFiles");
 	m_pfnGetCurrentModel = (PFN_GetCurrentModel)GetProcAddress(m_hDll, "GetCurrentModel");
 
 	if (m_pfnGetAIResponse == nullptr || m_pfnGetAIResponseWithFiles == nullptr)
 	{
-		MessageBox(_T("DLL í•¨ìˆ˜ë¥¼ ì°¾ì„ ìˆ˜ ì—†ìŠµë‹ˆë‹¤."), _T("ì˜¤ë¥˜"), MB_OK | MB_ICONERROR);
+		MessageBox(_T("DLL ÇÔ¼ö¸¦ Ã£À» ¼ö ¾ø½À´Ï´Ù."), _T("¿À·ù"), MB_OK | MB_ICONERROR);
 		UnloadDLL();
 		return;
 	}
 
-	// ëª¨ë¸ ì •ë³´ í‘œì‹œ
+	// ¸ğµ¨ Á¤º¸ Ç¥½Ã
 	if (m_pfnGetCurrentModel != nullptr)
 	{
 		const char* model = m_pfnGetCurrentModel();
@@ -148,7 +148,7 @@ void CAI_API_TestDlg::UnloadDLL()
 }
 
 // ========================================
-// í”„ë¡¬í”„íŠ¸ ê´€ë¦¬
+// ÇÁ·ÒÇÁÆ® °ü¸®
 // ========================================
 
 void CAI_API_TestDlg::LoadDefaultPrompt()
@@ -156,7 +156,7 @@ void CAI_API_TestDlg::LoadDefaultPrompt()
 	std::ifstream file("default_prompt.txt");
 	if (!file.is_open())
 	{
-		// íŒŒì¼ì´ ì—†ìœ¼ë©´ ê¸°ë³¸ê°’ ìƒì„±
+		// ÆÄÀÏÀÌ ¾øÀ¸¸é ±âº»°ª »ı¼º
 		SaveDefaultPrompt();
 		return;
 	}
@@ -218,7 +218,7 @@ void CAI_API_TestDlg::SaveDefaultPrompt()
 		"Indicate States: Note activation/deactivation, selected/unselected states when clear\n"
 		"Naming Consistency: Use identical naming for components with the same function\n"
 		"Text Content: Include displayed text for buttons/labels/tags in \"Description\" column\n"
-		"Language: Provide all descriptions in Korean (í•œê¸€)\n"
+		"Language: Provide all descriptions in Korean (ÇÑ±Û)\n"
 		"\n"
 		"Output Format\n"
 		"Format the result as a CSV table with the following specifications:\n"
@@ -239,8 +239,8 @@ void CAI_API_TestDlg::SaveDefaultPrompt()
 		"Example format:\n"
 		"CSV_Start\n"
 		"ID,GUI Component,Coordinates,Description\n"
-		"1,Button,\"(10, 20, 100, 40)\",ë¡œê·¸ì¸ ë²„íŠ¼\\n\n"
-		"2,Grid,\"(10, 210, 100, 400)\",ìƒì„¸ ì •ë³´\\n\n"
+		"1,Button,\"(10, 20, 100, 40)\",·Î±×ÀÎ ¹öÆ°\\n\n"
+		"2,Grid,\"(10, 210, 100, 400)\",»ó¼¼ Á¤º¸\\n\n"
 		"CSV_End\n"
 		"Important: Response Format\n"
 		"Provide ONLY the CSV table in your response. Do not include any explanations, commentary, preamble, or postamble. Just the CSV table wrapped with CSV_Start and CSV_End markers.\n";
@@ -256,7 +256,7 @@ void CAI_API_TestDlg::SaveDefaultPrompt()
 }
 
 // ========================================
-// ëŒ€í™” ë‚´ì—­ ê´€ë¦¬
+// ´ëÈ­ ³»¿ª °ü¸®
 // ========================================
 
 CString CAI_API_TestDlg::Utf8ToAnsi(const char* utf8Str)
@@ -309,15 +309,15 @@ std::string CAI_API_TestDlg::AnsiToUtf8(const char* ansiStr)
 
 void CAI_API_TestDlg::AddChatMessage(const CString& role, const CString& text)
 {
-	// í˜„ì¬ ì„ íƒ ìœ„ì¹˜ ì €ì¥
+	// ÇöÀç ¼±ÅÃ À§Ä¡ ÀúÀå
 	CHARRANGE cr;
 	m_ctrlChatHistory.GetSel(cr);
 
-	// í…ìŠ¤íŠ¸ ëìœ¼ë¡œ ì´ë™
+	// ÅØ½ºÆ® ³¡À¸·Î ÀÌµ¿
 	int nLen = m_ctrlChatHistory.GetTextLength();
 	m_ctrlChatHistory.SetSel(nLen, nLen);
 
-	// ì—­í•  í‘œì‹œ
+	// ¿ªÇÒ Ç¥½Ã
 	CHARFORMAT2 cfRole;
 	ZeroMemory(&cfRole, sizeof(CHARFORMAT2));
 	cfRole.cbSize = sizeof(CHARFORMAT2);
@@ -329,19 +329,19 @@ void CAI_API_TestDlg::AddChatMessage(const CString& role, const CString& text)
 	m_ctrlChatHistory.SetSelectionCharFormat(cfRole);
 	m_ctrlChatHistory.ReplaceSel(_T("[") + role + _T("]\r\n"));
 
-	// ë©”ì‹œì§€ ë‚´ìš©
+	// ¸Ş½ÃÁö ³»¿ë
 	CHARFORMAT2 cfText;
 	ZeroMemory(&cfText, sizeof(CHARFORMAT2));
 	cfText.cbSize = sizeof(CHARFORMAT2);
 	cfText.dwMask = CFM_BOLD | CFM_COLOR | CFM_SIZE;
-	cfText.dwEffects = 0; // Bold í•´ì œ
+	cfText.dwEffects = 0; // Bold ÇØÁ¦
 	cfText.yHeight = 200; // 10pt
 	cfText.crTextColor = RGB(0, 0, 0);
 
 	m_ctrlChatHistory.SetSelectionCharFormat(cfText);
 	m_ctrlChatHistory.ReplaceSel(text + _T("\r\n\r\n"));
 
-	// ìë™ ìŠ¤í¬ë¡¤
+	// ÀÚµ¿ ½ºÅ©·Ñ
 	m_ctrlChatHistory.LineScroll(m_ctrlChatHistory.GetLineCount());
 }
 
@@ -371,7 +371,7 @@ void CAI_API_TestDlg::AppendFileAttachments()
 			fileName = fileName.Mid(pos + 1);
 
 		CString attachment;
-		attachment.Format(_T("[íŒŒì¼] %s\r\n"), fileName);
+		attachment.Format(_T("[ÆÄÀÏ] %s\r\n"), fileName);
 		m_ctrlChatHistory.ReplaceSel(attachment);
 	}
 
@@ -379,14 +379,14 @@ void CAI_API_TestDlg::AppendFileAttachments()
 }
 
 // ========================================
-// ì´ë²¤íŠ¸ í•¸ë“¤ëŸ¬
+// ÀÌº¥Æ® ÇÚµé·¯
 // ========================================
 
 void CAI_API_TestDlg::OnBnClickedBtnAddFile()
 {
 	CFileDialog dlg(TRUE, NULL, NULL,
 		OFN_FILEMUSTEXIST | OFN_ALLOWMULTISELECT | OFN_EXPLORER,
-		_T("ëª¨ë“  íŒŒì¼ (*.*)|*.*|ì´ë¯¸ì§€ (*.jpg;*.png;*.gif;*.webp)|*.jpg;*.png;*.gif;*.webp|ë¬¸ì„œ (*.pdf;*.txt;*.json)|*.pdf;*.txt;*.json||"));
+		_T("¸ğµç ÆÄÀÏ (*.*)|*.*|ÀÌ¹ÌÁö (*.jpg;*.png;*.gif;*.webp)|*.jpg;*.png;*.gif;*.webp|¹®¼­ (*.pdf;*.txt;*.json)|*.pdf;*.txt;*.json||"));
 
 	const int MAX_FILES = 100;
 	const int BUFFER_SIZE = MAX_FILES * MAX_PATH;
@@ -429,23 +429,23 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 {
 	if (m_pfnGetAIResponse == nullptr && m_pfnGetAIResponseWithFiles == nullptr)
 	{
-		MessageBox(_T("DLLì´ ë¡œë“œë˜ì§€ ì•Šì•˜ìŠµë‹ˆë‹¤."), _T("ì˜¤ë¥˜"), MB_OK | MB_ICONERROR);
+		MessageBox(_T("DLLÀÌ ·ÎµåµÇÁö ¾Ê¾Ò½À´Ï´Ù."), _T("¿À·ù"), MB_OK | MB_ICONERROR);
 		return;
 	}
 
-	// í”„ë¡¬í”„íŠ¸ ê°€ì ¸ì˜¤ê¸°
+	// ÇÁ·ÒÇÁÆ® °¡Á®¿À±â
 	m_ctrlPrompt.GetWindowText(m_strPrompt);
 	if (m_strPrompt.IsEmpty())
 	{
-		MessageBox(_T("í”„ë¡¬í”„íŠ¸ë¥¼ ì…ë ¥í•˜ì„¸ìš”."), _T("ì•Œë¦¼"), MB_OK | MB_ICONINFORMATION);
+		MessageBox(_T("ÇÁ·ÒÇÁÆ®¸¦ ÀÔ·ÂÇÏ¼¼¿ä."), _T("¾Ë¸²"), MB_OK | MB_ICONINFORMATION);
 		return;
 	}
 
-	// ì‚¬ìš©ì ë©”ì‹œì§€ í‘œì‹œ
+	// »ç¿ëÀÚ ¸Ş½ÃÁö Ç¥½Ã
 	AddChatMessage(_T("User"), m_strPrompt);
 	AppendFileAttachments();
 
-	// íŒŒì¼ ê²½ë¡œ ë°°ì—´ ì¤€ë¹„
+	// ÆÄÀÏ °æ·Î ¹è¿­ ÁØºñ
 	int fileCount = (int)m_arrFiles.size();
 	const char** filePaths = nullptr;
 	std::vector<std::string> utf8Paths;
@@ -457,16 +457,16 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 
 		for (int i = 0; i < fileCount; i++)
 		{
-			// íŒŒì¼ ê²½ë¡œë¥¼ UTF-8ë¡œ ë³€í™˜ (ANSI -> UTF-8)
+			// ÆÄÀÏ °æ·Î¸¦ UTF-8·Î º¯È¯ (ANSI -> UTF-8)
 			utf8Paths[i] = AnsiToUtf8(CT2A(m_arrFiles[i]));
 			filePaths[i] = utf8Paths[i].c_str();
 		}
 	}
 
-	// í”„ë¡¬í”„íŠ¸ë¥¼ UTF-8ë¡œ ë³€í™˜ (ANSI -> UTF-8)
+	// ÇÁ·ÒÇÁÆ®¸¦ UTF-8·Î º¯È¯ (ANSI -> UTF-8)
 	std::string promptUtf8 = AnsiToUtf8(CT2A(m_strPrompt));
 
-	// DLL í˜¸ì¶œ
+	// DLL È£Ãâ
 	CHATGPT_RESULT result;
 	BOOL bSuccess = FALSE;
 	if (fileCount > 0)
@@ -478,7 +478,7 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 		bSuccess = m_pfnGetAIResponse(promptUtf8.c_str(), &result);
 	}
 
-	// ê²°ê³¼ í‘œì‹œ (UTF-8 -> ANSI ë³€í™˜)
+	// °á°ú Ç¥½Ã (UTF-8 -> ANSI º¯È¯)
 	if (bSuccess)
 	{
 		CString response = Utf8ToAnsi(result.t.c_str());
@@ -487,14 +487,14 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 	else
 	{
 		CString error = Utf8ToAnsi(result.t.c_str());
-		MessageBox(error, _T("API ì˜¤ë¥˜"), MB_OK | MB_ICONERROR);
+		MessageBox(error, _T("API ¿À·ù"), MB_OK | MB_ICONERROR);
 	}
 
-	// ì •ë¦¬
+	// Á¤¸®
 	if (filePaths != nullptr)
 		delete[] filePaths;
 
-	// í”„ë¡¬í”„íŠ¸ ì´ˆê¸°í™”
+	// ÇÁ·ÒÇÁÆ® ÃÊ±âÈ­
 	m_ctrlPrompt.SetWindowText(_T(""));
 }
 

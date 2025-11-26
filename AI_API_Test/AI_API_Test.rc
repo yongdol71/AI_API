@@ -17,7 +17,7 @@
 #undef APSTUDIO_READONLY_SYMBOLS
 
 /////////////////////////////////////////////////////////////////////////////
-// í•œêµ­ì–´(ëŒ€í•œë¯¼êµ­) resources
+// ÇÑ±¹¾î(´ëÇÑ¹Î±¹) resources
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
 LANGUAGE LANG_KOREAN, SUBLANG_DEFAULT
@@ -52,8 +52,8 @@ BEGIN
     "\r\n"
     "#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)\r\n"
     "LANGUAGE 18, 1\r\n"
-    "#include ""res\\AI_API_Test.rc2""  // Microsoft Visual C++ì—ì„œ íŽ¸ì§‘ë˜ì§€ ì•Šì€ ë¦¬ì†ŒìŠ¤\r\n"
-    "#include ""l.KOR\\afxres.rc""      // í‘œì¤€ êµ¬ì„± ìš”ì†Œ\r\n"
+    "#include ""res\\AI_API_Test.rc2""  // Microsoft Visual C++¿¡¼­ ÆíÁýµÇÁö ¾ÊÀº ¸®¼Ò½º\r\n"
+    "#include ""l.KOR\\afxres.rc""      // Ç¥ÁØ ±¸¼º ¿ä¼Ò\r\n"
     "#endif\r\n"
     "\0"
 END
@@ -68,8 +68,8 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-// Note: ì•„ì´ì½˜ íŒŒì¼ì´ ì—†ëŠ” ê²½ìš° Visual Studioì—ì„œ ìžë™ ìƒì„±ë˜ê±°ë‚˜
-// ê¸°ë³¸ ì•„ì´ì½˜ì´ ì‚¬ìš©ë©ë‹ˆë‹¤. í•„ìš”ì‹œ res\AI_API_Test.ico íŒŒì¼ì„ ì¶”ê°€í•˜ì„¸ìš”.
+// Note: ¾ÆÀÌÄÜ ÆÄÀÏÀÌ ¾ø´Â °æ¿ì Visual Studio¿¡¼­ ÀÚµ¿ »ý¼ºµÇ°Å³ª
+// ±âº» ¾ÆÀÌÄÜÀÌ »ç¿ëµË´Ï´Ù. ÇÊ¿ä½Ã res\AI_API_Test.ico ÆÄÀÏÀ» Ãß°¡ÇÏ¼¼¿ä.
 // IDR_MAINFRAME           ICON                    "res\\AI_API_Test.ico"
 
 
@@ -84,23 +84,23 @@ EXSTYLE WS_EX_APPWINDOW
 CAPTION "AI API Tester"
 FONT 9, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    // ëŒ€í™” ë‚´ì—­ (ìµœìƒë‹¨)
-    LTEXT           "ëŒ€í™” ë‚´ì—­:",IDC_STATIC_CHAT_LABEL,7,7,406,8
+    // ´ëÈ­ ³»¿ª (ÃÖ»ó´Ü)
+    LTEXT           "´ëÈ­ ³»¿ª:",IDC_STATIC_CHAT_LABEL,7,7,406,8
     CONTROL         "",IDC_RICHEDIT_CHAT,"RichEdit20A",ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | WS_BORDER | WS_VSCROLL,7,18,406,250
 
-    // ì²¨ë¶€ íŒŒì¼
-    LTEXT           "ì²¨ë¶€ íŒŒì¼:",IDC_STATIC_FILES_LABEL,7,273,406,8
+    // Ã·ºÎ ÆÄÀÏ
+    LTEXT           "Ã·ºÎ ÆÄÀÏ:",IDC_STATIC_FILES_LABEL,7,273,406,8
     LISTBOX         IDC_LIST_FILES,7,284,406,60,LBS_NOINTEGRALHEIGHT | WS_VSCROLL | WS_HSCROLL | WS_TABSTOP
-    PUSHBUTTON      "ì¶”ê°€",IDC_BTN_ADD_FILE,7,348,50,14
-    PUSHBUTTON      "ì œê±°",IDC_BTN_REMOVE_FILE,62,348,50,14
-    PUSHBUTTON      "ëª¨ë‘ì œê±°",IDC_BTN_CLEAR_FILES,117,348,50,14
+    PUSHBUTTON      "Ãß°¡",IDC_BTN_ADD_FILE,7,348,50,14
+    PUSHBUTTON      "Á¦°Å",IDC_BTN_REMOVE_FILE,62,348,50,14
+    PUSHBUTTON      "¸ðµÎÁ¦°Å",IDC_BTN_CLEAR_FILES,117,348,50,14
 
-    // í”„ë¡¬í”„íŠ¸ ìž…ë ¥ (4ì¤„ ì´ìƒ)
-    LTEXT           "í”„ë¡¬í”„íŠ¸:",IDC_STATIC_PROMPT_LABEL,7,367,406,8
+    // ÇÁ·ÒÇÁÆ® ÀÔ·Â (4ÁÙ ÀÌ»ó)
+    LTEXT           "ÇÁ·ÒÇÁÆ®:",IDC_STATIC_PROMPT_LABEL,7,367,406,8
     EDITTEXT        IDC_EDIT_PROMPT,7,378,406,80,ES_MULTILINE | ES_AUTOVSCROLL | ES_WANTRETURN | WS_VSCROLL
-    PUSHBUTTON      "ê¸°ë³¸ê°’ ë¶ˆëŸ¬ì˜¤ê¸°",IDC_BTN_LOAD_DEFAULT,7,463,80,14
-    PUSHBUTTON      "ì§€ìš°ê¸°",IDC_BTN_CLEAR,305,463,50,14
-    DEFPUSHBUTTON   "ì „ì†¡",IDC_BTN_SEND,360,463,53,14
+    PUSHBUTTON      "±âº»°ª ºÒ·¯¿À±â",IDC_BTN_LOAD_DEFAULT,7,463,80,14
+    PUSHBUTTON      "Áö¿ì±â",IDC_BTN_CLEAR,305,463,50,14
+    DEFPUSHBUTTON   "Àü¼Û",IDC_BTN_SEND,360,463,53,14
 END
 
 
@@ -172,7 +172,7 @@ BEGIN
     0
 END
 
-#endif    // í•œêµ­ì–´(ëŒ€í•œë¯¼êµ­) resources
+#endif    // ÇÑ±¹¾î(´ëÇÑ¹Î±¹) resources
 /////////////////////////////////////////////////////////////////////////////
 
 
@@ -189,8 +189,8 @@ END
 
 #if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_KOR)
 LANGUAGE 18, 1
-#include "res\AI_API_Test.rc2"  // Microsoft Visual C++ì—ì„œ íŽ¸ì§‘ë˜ì§€ ì•Šì€ ë¦¬ì†ŒìŠ¤
-#include "l.KOR\afxres.rc"      // í‘œì¤€ êµ¬ì„± ìš”ì†Œ
+#include "res\AI_API_Test.rc2"  // Microsoft Visual C++¿¡¼­ ÆíÁýµÇÁö ¾ÊÀº ¸®¼Ò½º
+#include "l.KOR\afxres.rc"      // Ç¥ÁØ ±¸¼º ¿ä¼Ò
 #endif
 
 /////////////////////////////////////////////////////////////////////////////

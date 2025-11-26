@@ -1,4 +1,4 @@
-// AI_API_TestDlg.h : í—¤ë” íŒŒì¼
+// AI_API_TestDlg.h : Çì´õ ÆÄÀÏ
 //
 
 #pragma once
@@ -7,60 +7,60 @@
 #include <vector>
 #include <string>
 
-// DLL ì¸í„°í˜ì´ìŠ¤
+// DLL ÀÎÅÍÆäÀÌ½º
 #include "../include/common.h"
 
-// DLL í•¨ìˆ˜ í¬ì¸í„° íƒ€ì… ì •ì˜
+// DLL ÇÔ¼ö Æ÷ÀÎÅÍ Å¸ÀÔ Á¤ÀÇ
 typedef bool (*PFN_GetAIResponse)(const char*, CHATGPT_RESULT*);
 typedef bool (*PFN_GetAIResponseWithFiles)(const char*, const char**, int, CHATGPT_RESULT*);
 typedef const char* (*PFN_GetCurrentModel)();
 
-// CAI_API_TestDlg ëŒ€í™” ìƒì
+// CAI_API_TestDlg ´ëÈ­ »óÀÚ
 class CAI_API_TestDlg : public CDialogEx
 {
-// ìƒì„±ì…ë‹ˆë‹¤.
+// »ı¼ºÀÔ´Ï´Ù.
 public:
-	CAI_API_TestDlg(CWnd* pParent = nullptr);	// í‘œì¤€ ìƒì„±ìì…ë‹ˆë‹¤.
+	CAI_API_TestDlg(CWnd* pParent = nullptr);	// Ç¥ÁØ »ı¼ºÀÚÀÔ´Ï´Ù.
 	virtual ~CAI_API_TestDlg();
 
-// ëŒ€í™” ìƒì ë°ì´í„°ì…ë‹ˆë‹¤.
+// ´ëÈ­ »óÀÚ µ¥ÀÌÅÍÀÔ´Ï´Ù.
 #ifdef AFX_DESIGN_TIME
 	enum { IDD = IDD_AIAPI_TEST_DIALOG };
 #endif
 
 protected:
-	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV ì§€ì›ì…ë‹ˆë‹¤.
+	virtual void DoDataExchange(CDataExchange* pDX);	// DDX/DDV Áö¿øÀÔ´Ï´Ù.
 
-// êµ¬í˜„ì…ë‹ˆë‹¤.
+// ±¸ÇöÀÔ´Ï´Ù.
 protected:
 	HICON m_hIcon;
 
-	// ìƒì„±ëœ ë©”ì‹œì§€ ë§µ í•¨ìˆ˜
+	// »ı¼ºµÈ ¸Ş½ÃÁö ¸Ê ÇÔ¼ö
 	virtual BOOL OnInitDialog();
 	afx_msg void OnPaint();
 	afx_msg HCURSOR OnQueryDragIcon();
 	DECLARE_MESSAGE_MAP()
 
-// ì»¨íŠ¸ë¡¤ ë³€ìˆ˜
+// ÄÁÆ®·Ñ º¯¼ö
 public:
 	CRichEditCtrl m_ctrlChatHistory;
 	CListBox m_ctrlFileList;
 	CEdit m_ctrlPrompt;
 
-// ë°ì´í„° ë³€ìˆ˜
+// µ¥ÀÌÅÍ º¯¼ö
 private:
 	CString m_strPrompt;
 	std::vector<CString> m_arrFiles;
 	CString m_strDefaultPrompt;
 
-// DLL ê´€ë ¨
+// DLL °ü·Ã
 private:
 	HMODULE m_hDll;
 	PFN_GetAIResponse m_pfnGetAIResponse;
 	PFN_GetAIResponseWithFiles m_pfnGetAIResponseWithFiles;
 	PFN_GetCurrentModel m_pfnGetCurrentModel;
 
-// ì´ë²¤íŠ¸ í•¸ë“¤ëŸ¬
+// ÀÌº¥Æ® ÇÚµé·¯
 public:
 	afx_msg void OnBnClickedBtnAddFile();
 	afx_msg void OnBnClickedBtnRemoveFile();
@@ -69,7 +69,7 @@ public:
 	afx_msg void OnBnClickedBtnClear();
 	afx_msg void OnBnClickedBtnLoadDefault();
 
-// í—¬í¼ í•¨ìˆ˜
+// ÇïÆÛ ÇÔ¼ö
 private:
 	void LoadDLL();
 	void UnloadDLL();
