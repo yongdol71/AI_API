@@ -466,6 +466,17 @@ void CAI_API_TestDlg::OnBnClickedBtnSend()
 	// 프롬프트를 UTF-8로 변환 (ANSI -> UTF-8)
 	std::string promptUtf8 = AnsiToUtf8(CT2A(m_strPrompt));
 
+	// 디버그: Prompt 저장
+	{
+		std::ofstream debugPromptAnsi("debug_prompt_ansi.txt", std::ios::binary);
+		debugPromptAnsi << CT2A(m_strPrompt);
+		debugPromptAnsi.close();
+
+		std::ofstream debugPromptUtf8("debug_prompt_utf8.txt", std::ios::binary);
+		debugPromptUtf8 << promptUtf8;
+		debugPromptUtf8.close();
+	}
+
 	// DLL 호출
 	CHATGPT_RESULT result;
 	BOOL bSuccess = FALSE;

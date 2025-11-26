@@ -612,6 +612,13 @@ public:
                         // Windows에서 대부분의 텍스트 파일은 ANSI로 저장됨
                         std::string ansiText(fileData.begin(), fileData.end());
 
+                        // 디버그: 원본 ANSI 저장
+                        {
+                            std::ofstream debugFileAnsi("debug_file_ansi.txt", std::ios::binary);
+                            debugFileAnsi.write(ansiText.c_str(), ansiText.length());
+                            debugFileAnsi.close();
+                        }
+
                         // ANSI (CP949) -> Wide char
                         int wideLen = MultiByteToWideChar(CP_ACP, 0, ansiText.c_str(), (int)ansiText.length(), nullptr, 0);
                         if (wideLen > 0)
@@ -628,6 +635,13 @@ public:
                                 WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), wideLen, utf8Buffer.data(), utf8Len, nullptr, nullptr);
                                 utf8Buffer[utf8Len] = 0;
                                 textContent = std::string(utf8Buffer.data());
+
+                                // 디버그: 변환된 UTF-8 저장
+                                {
+                                    std::ofstream debugFileUtf8("debug_file_utf8.txt", std::ios::binary);
+                                    debugFileUtf8.write(textContent.c_str(), textContent.length());
+                                    debugFileUtf8.close();
+                                }
                             }
                         }
                     }
@@ -668,6 +682,13 @@ public:
             };
 
             std::string jsonString = requestJson.dump();
+
+            // 디버그: 최종 JSON 요청 저장
+            {
+                std::ofstream debugJson("debug_request.json", std::ios::binary);
+                debugJson << requestJson.dump(2);  // pretty print
+                debugJson.close();
+            }
 
             // 요청 크기 확인 (디버깅)
             if (jsonString.size() > 10 * 1024 * 1024)  // 10MB 초과
