@@ -543,7 +543,7 @@ public:
                 std::vector<unsigned char> fileData;
                 if (!ReadBinaryFile(filepath, fileData))
                 {
-                    pResult->t = std::string("Error: Failed to read file: ") + filepath;
+                    pResult->t = std::string("Error: Failed to read file: ") + ANSIToUTF8(filepath);
                     return false;
                 }
 
@@ -551,7 +551,7 @@ public:
                 const size_t MAX_FILE_SIZE = 5 * 1024 * 1024;
                 if (fileData.size() > MAX_FILE_SIZE)
                 {
-                    pResult->t = std::string("Error: File too large (max 5MB): ") + filepath;
+                    pResult->t = std::string("Error: File too large (max 5MB): ") + ANSIToUTF8(filepath);
                     return false;
                 }
 
@@ -559,7 +559,7 @@ public:
                 std::string base64Data = Base64Encode(fileData.data(), fileData.size());
                 if (base64Data.empty())
                 {
-                    pResult->t = std::string("Error: Failed to encode file: ") + filepath;
+                    pResult->t = std::string("Error: Failed to encode file: ") + ANSIToUTF8(filepath);
                     return false;
                 }
 
@@ -638,8 +638,11 @@ public:
                     if (lastSlash != std::string::npos)
                         filename = filename.substr(lastSlash + 1);
 
-                    // 텍스트 블록으로 추가
-                    std::string textBlock = std::string("File: ") + filename + "\n\n" + textContent;
+                    // 파일명을 ANSI에서 UTF-8로 변환
+                    std::string filenameUtf8 = ANSIToUTF8(filename);
+
+                    // 텍스트 블록으로 추가 (filename과 textContent 모두 UTF-8)
+                    std::string textBlock = std::string("File: ") + filenameUtf8 + "\n\n" + textContent;
                     contentArray.push_back({
                         {"type", "text"},
                         {"text", textBlock}  // nlohmann/json이 UTF-8과 JSON 이스케이프를 자동 처리
@@ -647,7 +650,7 @@ public:
                 }
                 else
                 {
-                    pResult->t = std::string("Error: Unsupported file type: ") + filepath;
+                    pResult->t = std::string("Error: Unsupported file type: ") + ANSIToUTF8(filepath);
                     return false;
                 }
             }
