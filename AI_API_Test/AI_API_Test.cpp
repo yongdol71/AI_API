@@ -33,6 +33,9 @@ BOOL CAI_API_TestApp::InitInstance()
 {
 	CWinApp::InitInstance();
 
+	// RichEdit 컨트롤 초기화 (필수!)
+	AfxInitRichEdit2();
+
 	// 표준 초기화
 	SetRegistryKey(_T("AI_API_Test"));
 
