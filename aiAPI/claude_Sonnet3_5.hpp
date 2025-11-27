@@ -247,6 +247,13 @@ std::vector<char> WinHttpRequest(
     if (!hSession)
         return response;
 
+    // Timeout 설정 (5분 = 300,000ms)
+    WinHttpSetTimeouts(hSession,
+        300000,  // DNS resolve timeout
+        300000,  // Connect timeout
+        300000,  // Send timeout
+        300000); // Receive timeout
+
     // ���� ����
     hConnect = WinHttpConnect(hSession, host.c_str(), INTERNET_DEFAULT_HTTPS_PORT, 0);
     if (!hConnect)
