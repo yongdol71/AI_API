@@ -47,7 +47,19 @@ inline std::string Base64Encode(const unsigned char* data, size_t length)
         return "";
     }
 
-    return std::string(base64Buffer.data(), base64Length - 1); // null terminator 제외
+    // 결과 문자열 생성 (줄바꿈 문자 제거)
+    std::string result;
+    result.reserve(base64Length);
+    for (DWORD i = 0; i < base64Length; i++)
+    {
+        char c = base64Buffer[i];
+        if (c != '\r' && c != '\n' && c != '\0')
+        {
+            result += c;
+        }
+    }
+
+    return result;
 }
 
 // ========================
