@@ -8,13 +8,27 @@
 #include <sstream>
 #include <cstdlib>
 
+// DLL과 동일한 구조체를 사용하기 위해 common.h include
+// 프로젝트 설정에서 include 경로 추가 필요: $(SolutionDir)AI_API\include
+#include <nlohmann/json.hpp>
+using json = nlohmann::json;
+
 // ========================
 // DLL 함수 원형 정의
 // ========================
-typedef bool (*PFN_GetAIResponse)(const char* input, void* result);
-typedef bool (*PFN_GetAIResponseWithImage)(const char* input, const char* imagePath, void* result);
-typedef bool (*PFN_GetAIResponseWithFile)(const char* input, const char* filePath, void* result);
-typedef bool (*PFN_GetAIResponseWithFiles)(const char* input, const char** filePaths, int fileCount, void* result);
+
+// CHATGPT_RESULT 구조체 (DLL과 동일해야 함)
+struct CHATGPT_RESULT
+{
+    json o;              // nlohmann::json 객체
+    std::string t;       // 응답 텍스트
+    std::vector<char> data;
+};
+
+typedef bool (*PFN_GetAIResponse)(const char* input, CHATGPT_RESULT* result);
+typedef bool (*PFN_GetAIResponseWithImage)(const char* input, const char* imagePath, CHATGPT_RESULT* result);
+typedef bool (*PFN_GetAIResponseWithFile)(const char* input, const char* filePath, CHATGPT_RESULT* result);
+typedef bool (*PFN_GetAIResponseWithFiles)(const char* input, const char** filePaths, int fileCount, CHATGPT_RESULT* result);
 typedef char* (*PFN_GetLastError)();
 typedef const char* (*PFN_GetCurrentModel)();
 typedef bool (*PFN_ReloadConfig)(const char* configPath);
@@ -30,16 +44,6 @@ static PFN_GetAIResponseWithFiles g_pfnGetAIResponseWithFiles = nullptr;
 static PFN_GetLastError g_pfnGetLastError = nullptr;
 static PFN_GetCurrentModel g_pfnGetCurrentModel = nullptr;
 static PFN_ReloadConfig g_pfnReloadConfig = nullptr;
-
-// ========================
-// CHATGPT_RESULT 구조체 (DLL과 동일)
-// ========================
-struct CHATGPT_RESULT_LOCAL
-{
-    void* o;           // JSON object (nlohmann::json)
-    std::string t;     // 응답 텍스트
-    std::vector<char> data;
-};
 
 // ========================
 // 함수 1: DLL 로딩 및 함수 연결
@@ -291,7 +295,7 @@ bool ProcessImageWithJsonAndGetCSV(
     filePaths.push_back(jsonFilePath.c_str());
 
     // 5. API 호출
-    CHATGPT_RESULT_LOCAL result;
+    CHATGPT_RESULT result;
     bool bSuccess = g_pfnGetAIResponseWithFiles(
         finalPrompt.c_str(),
         filePaths.data(),
@@ -371,7 +375,7 @@ bool ProcessImageOnly(
         return false;
     }
 
-    CHATGPT_RESULT_LOCAL result;
+    CHATGPT_RESULT result;
     bool bSuccess = g_pfnGetAIResponseWithImage(
         prompt.c_str(),
         imagePath.c_str(),
@@ -397,7 +401,7 @@ bool ProcessTextOnly(
         return false;
     }
 
-    CHATGPT_RESULT_LOCAL result;
+    CHATGPT_RESULT result;
     bool bSuccess = g_pfnGetAIResponse(
         prompt.c_str(),
         &result);
