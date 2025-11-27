@@ -6,6 +6,7 @@
 #include <map>
 #include <fstream>
 #include <sstream>
+#include <cstdlib>
 
 // ========================
 // DLL 함수 원형 정의
@@ -145,13 +146,60 @@ static std::vector<std::string> ParseCSVLine(const std::string& line)
 }
 
 // ========================
+// 유틸리티: 문자열을 double로 변환 (안전하게)
+// ========================
+static double SafeStod(const std::string& str, double defaultVal = 0.0)
+{
+    if (str.empty())
+        return defaultVal;
+
+    try
+    {
+        return std::stod(str);
+    }
+    catch (...)
+    {
+        return defaultVal;
+    }
+}
+
+// ========================
+// 유틸리티: CSV 컬럼을 구조체에 매핑
+// CSV 형식: ID, Name, Type, X, Y, Width, Height, Extra...
+// ========================
+static CSV_ITEM_DATA ParseCSVColumns(const std::vector<std::string>& columns)
+{
+    CSV_ITEM_DATA item;
+    item.rawColumns = columns;
+
+    if (columns.size() >= 1)
+        item.id = columns[0];
+    if (columns.size() >= 2)
+        item.name = columns[1];
+    if (columns.size() >= 3)
+        item.type = columns[2];
+    if (columns.size() >= 4)
+        item.x = SafeStod(columns[3]);
+    if (columns.size() >= 5)
+        item.y = SafeStod(columns[4]);
+    if (columns.size() >= 6)
+        item.width = SafeStod(columns[5]);
+    if (columns.size() >= 7)
+        item.height = SafeStod(columns[6]);
+    if (columns.size() >= 8)
+        item.extra = columns[7];
+
+    return item;
+}
+
+// ========================
 // 함수 2: AI API 호출 및 CSV 결과 파싱
 // ========================
 bool ProcessImageWithJsonAndGetCSV(
     const std::string& imagePath,
     const std::string& jsonFilePath,
     const std::string& promptFilePath,
-    std::map<std::string, std::vector<std::string>>& outResultMap)
+    CSV_RESULT_MAP& outResultMap)
 {
     // 결과 맵 초기화
     outResultMap.clear();
@@ -220,8 +268,8 @@ bool ProcessImageWithJsonAndGetCSV(
     std::string csvContent = responseText.substr(csvStartPos, csvEndPos - csvStartPos);
     csvContent = Trim(csvContent);
 
-    // 7. CSV 내용 파싱하여 Map에 저장
-    //    형식: ID, Value1, Value2, ...
+    // 7. CSV 내용 파싱하여 구조체로 변환 후 Map에 저장
+    //    형식: ID, Name, Type, X, Y, Width, Height, Extra
     std::istringstream csvStream(csvContent);
     std::string line;
 
@@ -231,15 +279,27 @@ bool ProcessImageWithJsonAndGetCSV(
         if (line.empty())
             continue;
 
-        std::vector<std::string> columns = ParseCSVLine(line);
-        if (columns.size() >= 2)
+        // 헤더 라인 스킵 (선택적)
+        if (line.find("ID") == 0 && line.find(",") != std::string::npos)
         {
-            // 첫 번째 컬럼이 ID (Key)
-            std::string id = columns[0];
+            // 헤더인지 확인 (첫 번째 컬럼이 "ID"이고 다음 컬럼이 "Name" 등인 경우)
+            std::vector<std::string> headerCheck = ParseCSVLine(line);
+            if (headerCheck.size() >= 2 &&
+                (headerCheck[1] == "Name" || headerCheck[1] == "name" ||
+                 headerCheck[1] == "NAME"))
+            {
+                continue;  // 헤더 스킵
+            }
+        }
 
-            // 나머지 컬럼들을 값으로 저장
-            std::vector<std::string> values(columns.begin() + 1, columns.end());
-            outResultMap[id] = values;
+        std::vector<std::string> columns = ParseCSVLine(line);
+        if (columns.size() >= 1 && !columns[0].empty())
+        {
+            // 구조체로 변환
+            CSV_ITEM_DATA itemData = ParseCSVColumns(columns);
+
+            // ID를 Key로 Map에 저장
+            outResultMap[itemData.id] = itemData;
         }
     }
 
