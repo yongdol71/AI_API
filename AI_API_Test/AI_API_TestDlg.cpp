@@ -341,10 +341,8 @@ void CAI_API_TestDlg::AddChatMessage(const CString& role, const CString& text)
 	m_ctrlChatHistory.SetSelectionCharFormat(cfText);
 	m_ctrlChatHistory.ReplaceSel(text + _T("\r\n\r\n"));
 
-	// 자동 스크롤 - 커서를 끝으로 이동 후 해당 위치로 스크롤
-	int nNewLen = m_ctrlChatHistory.GetTextLength();
-	m_ctrlChatHistory.SetSel(nNewLen, nNewLen);
-	m_ctrlChatHistory.SendMessage(EM_SCROLLCARET, 0, 0);
+	// 자동 스크롤 - 맨 아래로 스크롤
+	m_ctrlChatHistory.PostMessage(WM_VSCROLL, SB_BOTTOM, 0);
 }
 
 void CAI_API_TestDlg::AppendFileAttachments()
