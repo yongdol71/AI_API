@@ -103,17 +103,69 @@ void UnloadAiApiDll()
 }
 
 // ========================
-// 유틸리티: 파일 읽기
+// 유틸리티: ANSI -> UTF-8 변환
 // ========================
-static std::string ReadTextFile(const std::string& filePath)
+static std::string ANSIToUTF8(const std::string& ansiStr)
 {
-    std::ifstream file(filePath);
+    if (ansiStr.empty())
+        return "";
+
+    // ANSI -> Wide char
+    int wideLen = MultiByteToWideChar(CP_ACP, 0, ansiStr.c_str(), -1, nullptr, 0);
+    if (wideLen == 0)
+        return ansiStr;
+
+    std::vector<wchar_t> wideBuffer(wideLen);
+    MultiByteToWideChar(CP_ACP, 0, ansiStr.c_str(), -1, wideBuffer.data(), wideLen);
+
+    // Wide char -> UTF-8
+    int utf8Len = WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), -1, nullptr, 0, nullptr, nullptr);
+    if (utf8Len == 0)
+        return ansiStr;
+
+    std::vector<char> utf8Buffer(utf8Len);
+    WideCharToMultiByte(CP_UTF8, 0, wideBuffer.data(), -1, utf8Buffer.data(), utf8Len, nullptr, nullptr);
+
+    return std::string(utf8Buffer.data());
+}
+
+// ========================
+// 유틸리티: 파일 읽기 (UTF-8 변환 포함)
+// ========================
+static std::string ReadTextFile(const std::string& filePath, bool convertToUtf8 = true)
+{
+    // ANSI 경로 -> Wide char 변환 (한글 경로 지원)
+    int wideLen = MultiByteToWideChar(CP_ACP, 0, filePath.c_str(), -1, nullptr, 0);
+    if (wideLen == 0)
+        return "";
+
+    std::vector<wchar_t> widePathBuffer(wideLen);
+    MultiByteToWideChar(CP_ACP, 0, filePath.c_str(), -1, widePathBuffer.data(), wideLen);
+
+    // Wide char 경로로 파일 열기
+    std::ifstream file(widePathBuffer.data(), std::ios::binary);
     if (!file.is_open())
         return "";
 
     std::stringstream buffer;
     buffer << file.rdbuf();
-    return buffer.str();
+    std::string content = buffer.str();
+
+    if (!convertToUtf8 || content.empty())
+        return content;
+
+    // UTF-8 BOM 확인 (EF BB BF)
+    if (content.size() >= 3 &&
+        (unsigned char)content[0] == 0xEF &&
+        (unsigned char)content[1] == 0xBB &&
+        (unsigned char)content[2] == 0xBF)
+    {
+        // UTF-8 BOM 제거, 이미 UTF-8이므로 변환 불필요
+        return content.substr(3);
+    }
+
+    // BOM이 없으면 ANSI로 간주하고 UTF-8로 변환
+    return ANSIToUTF8(content);
 }
 
 // ========================
