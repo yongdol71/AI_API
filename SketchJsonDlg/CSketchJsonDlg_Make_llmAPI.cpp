@@ -7,6 +7,8 @@
 #include <fstream>
 #include <sstream>
 #include <cstdlib>
+#include <algorithm>
+#include <cctype>
 
 // DLL과 동일한 구조체를 사용하기 위해 common.h include
 // 프로젝트 설정에서 include 경로 추가 필요: $(SolutionDir)AI_API\include
@@ -328,6 +330,7 @@ bool ProcessImageWithJsonAndGetCSV(
     //    형식: ID, Name, Type, X, Y, Width, Height, Extra
     std::istringstream csvStream(csvContent);
     std::string line;
+    bool isFirstLine = true;  // 첫 번째 줄 플래그
 
     while (std::getline(csvStream, line))
     {
@@ -335,20 +338,46 @@ bool ProcessImageWithJsonAndGetCSV(
         if (line.empty())
             continue;
 
-        // 헤더 라인 스킵 (선택적)
-        if (line.find("ID") == 0 && line.find(",") != std::string::npos)
+        std::vector<std::string> columns = ParseCSVLine(line);
+        if (columns.empty())
+            continue;
+
+        // 헤더 라인 스킵 - 다양한 조건으로 체크
+        bool isHeader = false;
+
+        // 조건 1: 첫 번째 줄이고 첫 컬럼이 숫자가 아닌 경우 (헤더로 간주)
+        if (isFirstLine)
         {
-            // 헤더인지 확인 (첫 번째 컬럼이 "ID"이고 다음 컬럼이 "Name" 등인 경우)
-            std::vector<std::string> headerCheck = ParseCSVLine(line);
-            if (headerCheck.size() >= 2 &&
-                (headerCheck[1] == "Name" || headerCheck[1] == "name" ||
-                 headerCheck[1] == "NAME"))
+            isFirstLine = false;
+            std::string firstCol = columns[0];
+
+            // 첫 번째 컬럼이 순수 숫자가 아니면 헤더로 판단
+            bool isNumeric = !firstCol.empty() &&
+                std::all_of(firstCol.begin(), firstCol.end(), [](char c) {
+                    return std::isdigit(c) || c == '.' || c == '-';
+                });
+
+            if (!isNumeric)
             {
-                continue;  // 헤더 스킵
+                isHeader = true;
+            }
+
+            // 조건 2: 헤더 키워드 포함 여부 (대소문자 무시)
+            std::string firstColLower = firstCol;
+            std::transform(firstColLower.begin(), firstColLower.end(),
+                          firstColLower.begin(), ::tolower);
+
+            if (firstColLower == "id" || firstColLower == "index" ||
+                firstColLower == "no" || firstColLower == "번호" ||
+                firstColLower == "name" || firstColLower == "이름")
+            {
+                isHeader = true;
             }
         }
 
-        std::vector<std::string> columns = ParseCSVLine(line);
+        if (isHeader)
+            continue;  // 헤더 스킵
+
         if (columns.size() >= 1 && !columns[0].empty())
         {
             // 구조체로 변환
