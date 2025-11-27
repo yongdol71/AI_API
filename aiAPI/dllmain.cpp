@@ -10,11 +10,32 @@
 #define AIAPI_DLL_API __declspec(dllexport)
 #else
 #define AIAPI_DLL_API __declspec(dllimport)
-#endif    
+#endif
 
 // ���� Claude API �ν��Ͻ� (���� ���Ͽ��� �ε�)
 static CLAUDE_SONET_API* g_claudeAPI = nullptr;
 static std::string g_lastError;
+static HMODULE g_hModule = nullptr;  // DLL 모듈 핸들 저장
+
+// DLL 경로 기준으로 config.ini 전체 경로 가져오기
+static std::string GetConfigPath()
+{
+    if (g_hModule == nullptr)
+        return "config.ini";
+
+    char dllPath[MAX_PATH] = { 0 };
+    GetModuleFileNameA(g_hModule, dllPath, MAX_PATH);
+
+    // DLL 파일명 제거하고 디렉토리 경로만 남기기
+    std::string fullPath(dllPath);
+    size_t lastSlash = fullPath.find_last_of("\\/");
+    if (lastSlash != std::string::npos)
+    {
+        fullPath = fullPath.substr(0, lastSlash + 1);
+    }
+
+    return fullPath + "config.ini";
+}
 
 // DLL �ʱ�ȭ �Լ�
 bool InitializeClaudeAPI(const char* configPath)
@@ -68,10 +89,10 @@ extern "C" AIAPI_DLL_API bool GetAIResponse(const char* input, CHATGPT_RESULT* r
         return false;
     }
 
-    // API�� �ʱ�ȭ���� �ʾ����� �ʱ�ȭ �õ�
+    // API가 초기화되지 않았으면 초기화 시도
     if (g_claudeAPI == nullptr)
     {
-        if (!InitializeClaudeAPI("config.ini"))
+        if (!InitializeClaudeAPI(GetConfigPath().c_str()))
         {
             result->t = "Error: " + g_lastError;
             return false;
@@ -140,7 +161,7 @@ extern "C" AIAPI_DLL_API bool GetAIResponseWithImage(const char* input, const ch
     // API가 초기화되지 않았으면 초기화 시도
     if (g_claudeAPI == nullptr)
     {
-        if (!InitializeClaudeAPI("config.ini"))
+        if (!InitializeClaudeAPI(GetConfigPath().c_str()))
         {
             result->t = "Error: " + g_lastError;
             return false;
@@ -187,7 +208,7 @@ extern "C" AIAPI_DLL_API bool GetAIResponseWithFile(const char* input, const cha
     // API가 초기화되지 않았으면 초기화 시도
     if (g_claudeAPI == nullptr)
     {
-        if (!InitializeClaudeAPI("config.ini"))
+        if (!InitializeClaudeAPI(GetConfigPath().c_str()))
         {
             result->t = "Error: " + g_lastError;
             return false;
@@ -234,7 +255,7 @@ extern "C" AIAPI_DLL_API bool GetAIResponseWithFiles(const char* input, const ch
     // API가 초기화되지 않았으면 초기화 시도
     if (g_claudeAPI == nullptr)
     {
-        if (!InitializeClaudeAPI("config.ini"))
+        if (!InitializeClaudeAPI(GetConfigPath().c_str()))
         {
             result->t = "Error: " + g_lastError;
             return false;
@@ -267,8 +288,10 @@ BOOL APIENTRY DllMain(HMODULE hModule,
     switch (ul_reason_for_call)
     {
     case DLL_PROCESS_ATTACH:
-        // DLL�� �ε�� �� �ڵ����� �ʱ�ȭ
-        InitializeClaudeAPI("config.ini");
+        // DLL 모듈 핸들 저장
+        g_hModule = hModule;
+        // DLL 경로 기준으로 config.ini 찾아서 초기화
+        InitializeClaudeAPI(GetConfigPath().c_str());
         break;
         
     case DLL_THREAD_ATTACH:
