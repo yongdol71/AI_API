@@ -257,10 +257,10 @@ bool ProcessImageWithJsonAndGetCSV(
     const std::string& imagePath,
     const std::string& jsonFilePath,
     const std::string& promptFilePath,
-    CSV_RESULT_MAP& outResultMap)
+    CSV_RESULT_ARRAY& outResultArray)
 {
-    // 결과 맵 초기화
-    outResultMap.clear();
+    // 결과 배열 초기화
+    outResultArray.clear();
 
     // DLL 로드 확인
     if (g_pfnGetAIResponseWithFiles == nullptr)
@@ -383,8 +383,8 @@ bool ProcessImageWithJsonAndGetCSV(
             // 구조체로 변환
             CSV_ITEM_DATA itemData = ParseCSVColumns(columns);
 
-            // ID를 Key로 Map에 저장
-            outResultMap[itemData.id] = itemData;
+            // Array에 추가
+            outResultArray.push_back(itemData);
         }
     }
 

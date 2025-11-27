@@ -27,8 +27,8 @@ struct CSV_ITEM_DATA
     std::vector<std::string> rawColumns;
 };
 
-// 결과 Map 타입 정의
-typedef std::map<std::string, CSV_ITEM_DATA> CSV_RESULT_MAP;
+// 결과 Array 타입 정의 (Vector 사용)
+typedef std::vector<CSV_ITEM_DATA> CSV_RESULT_ARRAY;
 
 // ========================
 // DLL 로딩/해제
@@ -50,13 +50,13 @@ void UnloadAiApiDll();
 // imagePath: 이미지 파일 경로
 // jsonFilePath: JSON 파일 경로
 // promptFilePath: 프롬프트 템플릿 파일 경로 ({JSON_CONTENT} 플레이스홀더 지원)
-// outResultMap: 결과 CSV를 파싱한 Map (Key: ID, Value: CSV_ITEM_DATA 구조체)
+// outResultArray: 결과 CSV를 파싱한 Array (CSV_ITEM_DATA 구조체 배열)
 // 반환: 성공 시 true
 bool ProcessImageWithJsonAndGetCSV(
     const std::string& imagePath,
     const std::string& jsonFilePath,
     const std::string& promptFilePath,
-    CSV_RESULT_MAP& outResultMap);
+    CSV_RESULT_ARRAY& outResultArray);
 
 // 이미지만 첨부하여 AI API 호출
 // imagePath: 이미지 파일 경로
