@@ -397,7 +397,7 @@ public:
         return apiKey;
     }
 
-    bool Text(const char* prompt, CHATGPT_RESULT* pResult, int Temperature = 0, int max_tokens = 4096)
+    bool Text(const char* prompt, CHATGPT_RESULT* pResult, float temperature = 0.0f, int max_tokens = 4096)
     {
         if (apiKey.empty())
         {
@@ -415,10 +415,11 @@ public:
         sprintf_s(data.data(), requiredSize, u8R"({
     "model": "%s",
     "max_tokens": %d,
+    "temperature": %.1f,
     "messages": [
         {"role": "user", "content": "%s"}
     ]
-})", model.c_str(), max_tokens, escapedPrompt.c_str());
+})", model.c_str(), max_tokens, temperature, escapedPrompt.c_str());
 
         data.resize(strlen(data.data()));
 
@@ -518,7 +519,7 @@ public:
     // 멀티모달 지원: 파일 첨부 함수
     // ========================
     bool TextWithFiles(const char* prompt, const char** filePaths, int fileCount,
-                       CHATGPT_RESULT* pResult, int max_tokens = 4096)
+                       CHATGPT_RESULT* pResult, float temperature = 0.0f, int max_tokens = 4096)
     {
         if (apiKey.empty())
         {
@@ -529,7 +530,7 @@ public:
         if (filePaths == nullptr || fileCount <= 0)
         {
             // 파일이 없으면 일반 Text 호출
-            return Text(prompt, pResult, 0, max_tokens);
+            return Text(prompt, pResult, temperature, max_tokens);
         }
 
         try
@@ -685,6 +686,7 @@ public:
             json requestJson = {
                 {"model", model},
                 {"max_tokens", max_tokens},
+                {"temperature", temperature},
                 {"messages", json::array({
                     {
                         {"role", "user"},
@@ -806,17 +808,17 @@ public:
 
     // 편의 함수: 단일 이미지 첨부
     bool TextWithImage(const char* prompt, const char* imagePath,
-                       CHATGPT_RESULT* pResult, int max_tokens = 4096)
+                       CHATGPT_RESULT* pResult, float temperature = 0.0f, int max_tokens = 4096)
     {
         const char* files[] = { imagePath };
-        return TextWithFiles(prompt, files, 1, pResult, max_tokens);
+        return TextWithFiles(prompt, files, 1, pResult, temperature, max_tokens);
     }
 
     // 편의 함수: 단일 파일 첨부
     bool TextWithFile(const char* prompt, const char* filePath,
-                      CHATGPT_RESULT* pResult, int max_tokens = 4096)
+                      CHATGPT_RESULT* pResult, float temperature = 0.0f, int max_tokens = 4096)
     {
         const char* files[] = { filePath };
-        return TextWithFiles(prompt, files, 1, pResult, max_tokens);
+        return TextWithFiles(prompt, files, 1, pResult, temperature, max_tokens);
     }
 };
